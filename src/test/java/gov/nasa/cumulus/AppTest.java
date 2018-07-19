@@ -42,7 +42,9 @@ public class AppTest
     	+ "  \"deliveryTime\":\"2017-09-30T03:42:29.791198\","
     	+ "  \"identifier\": \"1234-abcd-efg0-9876\","
     	+ "  \"product\": {"
-    	+ "    \"status\":\"SUCCESS\""
+    	+ "    \"files\": ["
+    	+ "      { \"size\":53205914864} ]"
+    	
     	+ "  }"
     	+ "}";
     	

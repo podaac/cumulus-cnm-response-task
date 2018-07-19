@@ -40,7 +40,6 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 		CNMResponse c = new CNMResponse();
 		
 		String input = "{"
-			+"\"input\":{"
 			 +" \"version\":\"v1.0\","
 			 +" \"provider\": \"PODAAC\","
 			  +"\"deliveryTime\":\"2018-03-12T16:50:23.458100\","
@@ -65,7 +64,7 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 			  + "\"config\": {}"
 			  +"}";
 		
-		String output = c.PerformFunction(input, null);
+		String output = CNMResponse.generateOutput(input, null);
 		System.out.println(output);
     }
 
@@ -182,6 +181,9 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 			//logic for failure types here
 		}
 		
+		JsonElement sizeElement = inputKey.get("product").getAsJsonObject().get("files").getAsJsonArray().get(0).getAsJsonObject().get("size");
+		
+		inputKey.add("productSize", sizeElement);
 		inputKey.remove("product");
 		inputKey.add("response", response);
 		
@@ -224,21 +226,33 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 	// region
 
 	public String PerformFunction(String input, Context context) throws Exception {
+		
 		System.out.println("Processing " + input);
 		
 		JsonElement jelement = new JsonParser().parse(input);
 		JsonObject inputKey = jelement.getAsJsonObject();
 		
+		
 		JsonObject  inputConfig = inputKey.getAsJsonObject("config");
+		System.out.println("Step 2");
 		
-		String region = inputConfig.get("region").getAsString();
 		String cnm = new Gson().toJson(inputConfig.get("OriginalCNM"));
-		String exception = inputConfig.get("WorkflowException").getAsString();
-		String cnmResponseStream = inputConfig.get("CNMResponseStream").getAsString();
+		System.out.println("Step 3");
 		
+		String exception = null;
+		if(inputKey.get("WorkflowException") != null){
+			exception = inputKey.get("WorkflowException").getAsString();
+		}
+		System.out.println("Step 4");
 		System.out.println("Exception" + exception);
 		
 		String output = CNMResponse.generateOutput(cnm,exception);
+		System.out.println("Step 5");
+		System.out.println("got: " + output);
+		
+		
+		String region = inputConfig.get("region").getAsString();
+		String cnmResponseStream = inputConfig.get("CNMResponseStream").getAsString();
 		CNMResponse.sendMessage(output, region, cnmResponseStream);
 		
 		return output;
