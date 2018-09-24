@@ -111,8 +111,8 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 			context.getLogger().log(input);
 			CNMResponse cnmresponse = new CNMResponse();
 			try{
-			String output = cnmresponse.PerformFunction(input, context);
-			System.out.println("Output: " + output);
+				String output = cnmresponse.PerformFunction(input, context);
+				System.out.println("Output: " + output);
 			outputStream.write(output.getBytes(Charset.forName("UTF-8")));
 			}catch(Exception e){
 				e.printStackTrace();
@@ -255,8 +255,18 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 		String cnmResponseStream = inputConfig.get("CNMResponseStream").getAsString();
 		CNMResponse.sendMessage(output, region, cnmResponseStream);
 		
-		return output;
+		/* create new object:
+		 * 
+		 * {cnm: output, input:input}
+		 * 
+		 */
+		JsonObject bigOutput = new JsonObject();
+		bigOutput.add("cnm", new JsonParser().parse(output).getAsJsonObject());
+		bigOutput.add("input", new JsonParser().parse(input).getAsJsonObject());
+		
+		return new Gson().toJson(bigOutput);	
 		
 	}
+
 
 }
