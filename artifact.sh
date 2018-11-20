@@ -1,3 +1,3 @@
 mvn dependency:copy-dependencies
 gradle -x test build
-curl -u jenkins:${JENKINS_ARTIFACT_TOKEN} -X PUT https://podaac-ci.jpl.nasa.gov:8443/artifactory/ext-release-local/gov/nasa/cumulus/cnmResponse/1.0.1/cnmResponse-1.0.1.zip  -T build/distributions/cnmResponse-1.0.1.zip
+curl -u jenkins:${JENKINS_ARTIFACT_TOKEN} -X PUT https://podaac-ci.jpl.nasa.gov:8443/artifactory/ext-release-local/gov/nasa/cumulus/cnmResponse/1.0.2/cnmResponse-1.0.2.zip  -T build/distributions/cnmResponse-1.0.2.zip
