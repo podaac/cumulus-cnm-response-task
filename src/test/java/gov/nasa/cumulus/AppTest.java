@@ -3,11 +3,20 @@ package gov.nasa.cumulus;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import java.util.Scanner;
+import java.io.File;
+import java.io.IOException;
+
 
 /**
  * Unit test for simple App.
  */
-public class AppTest 
+public class AppTest
     extends TestCase
 {
     /**
@@ -33,8 +42,8 @@ public class AppTest
      */
     public void testApp()
     {
-    	
-    	
+
+
     	String cnm = "{"
     	+ "  \"version\": \"v1.0\","
     	+ "  \"provider\": \"PODAAC_SWOT\","
@@ -44,12 +53,42 @@ public class AppTest
     	+ "  \"product\": {"
     	+ "    \"files\": ["
     	+ "      { \"size\":53205914864} ]"
-    	
+
     	+ "  }"
     	+ "}";
-    	
+
     	String output = CNMResponse.generateOutput(cnm, "");
     	System.out.println(output);
         assertNotNull(output);
     }
+
+    public void testError() throws IOException{
+
+      StringBuilder sb = new StringBuilder();
+      Scanner scanner  = new Scanner(new File(getClass().getClassLoader().getResource("workflow.error.json").getFile()));
+      //String text = new Scanner(ClassLoader.getSystemResource("workflow.error.json")).useDelimiter("\\A").next();
+      while (scanner.hasNextLine()) {
+			     String line = scanner.nextLine();
+			     sb.append(line).append("\n");
+		  }
+
+
+
+		  scanner.close();
+      String text = sb.toString();
+      System.out.println("Processing " + text);
+
+  		JsonElement jelement = new JsonParser().parse(text);
+  		JsonObject inputKey = jelement.getAsJsonObject();
+
+      JsonObject  inputConfig = inputKey.getAsJsonObject("config");
+
+      CNMResponse cnm = new CNMResponse();
+      String ex = cnm.getError(inputConfig, "WorkflowException");
+      System.out.println("Exception: " + ex);
+      assertNotNull(ex);
+
+
+    }
+
 }

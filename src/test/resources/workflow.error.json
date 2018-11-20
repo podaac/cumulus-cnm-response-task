@@ -1,0 +1,65 @@
+{
+    "input": {
+        "granules": [
+            {
+                "granuleId": "L1B_HR_SLC_product_0001-of-4154",
+                "files": [
+                    {
+                        "name": "L1B_HR_SLC_product_0001-of-4154.h5",
+                        "bucket": "podaac-dev-cumulus-test-input",
+                        "fileSize": 3769638960,
+                        "path": "L1B_HR_SLC",
+                        "url_path": "s3://podaac-dev-cumulus-test-input/L1B_HR_SLC/L1B_HR_SLC_product_0001-of-4154.h5",
+                        "size": 3769638960
+                    }
+                ]
+            }
+        ]
+    },
+    "messageConfig": {
+        "outputs": [
+            {
+                "source": "{{$.cnm}}",
+                "destination": "{{$.meta.cnmResponse}}"
+            },
+            {
+                "source": "{{$.input.input}}",
+                "destination": "{{$.payload}}"
+            }
+        ]
+    },
+    "config": {
+        "OriginalCNM": {
+            "product": {
+                "files": [
+                    {
+                        "checksumType": "md5",
+                        "checksum": "123454321abc",
+                        "uri": "s3://podaac-dev-cumulus-test-input/L1B_HR_SLC/L1B_HR_SLC_product_0001-of-4154.h5",
+                        "name": "L1B_HR_SLC_product_0001-of-4154.h5",
+                        "type": "data",
+                        "size": 3769638960
+                    }
+                ],
+                "name": "L1B_HR_SLC/L1B_HR_SLC_product_0001-of-4154.h5",
+                "dataVersion": "1"
+            },
+            "trace": "aNewTrace",
+            "collection": "L1B_HR_SLC",
+            "version": "1",
+            "provider": "PODAAC",
+            "submissionTime": "2018-11-19T15:27:56.585649",
+            "identifier": "b092836b-ec0f-11e8-9430-dca9046f1268"
+        },
+        "region": "us-west-2",
+        "WorkflowException": {
+            "Cause": "Traceback (most recent call last):\n  File \"/usr/local/lib/python2.7/site-packages/cumulus_process/handlers.py\", line 42, in get_and_run_task\n    output = json.dumps(handler(event=payload))\n  File \"/usr/local/lib/python2.7/site-packages/cumulus_process/process.py\", line 323, in cumulus_handler\n    return run_cumulus_task(cls.handler, event, context)\n  File \"/usr/local/lib/python2.7/site-packages/run_cumulus_task.py\", line 55, in run_cumulus_task\n    task_response = task_function(nested_event, context)\n  File \"/usr/local/lib/python2.7/site-packages/cumulus_process/process.py\", line 318, in handler\n    return cls.run(path=path, noclean=noclean, **event)\n  File \"/usr/local/lib/python2.7/site-packages/cumulus_process/process.py\", line 343, in run\n    process = cls(*args, **kwargs)\n  File \"/usr/local/lib/python2.7/site-packages/cumulus_process/process.py\", line 80, in __init__\n    path = mkdtemp()\n  File \"/usr/lib64/python2.7/tempfile.py\", line 339, in mkdtemp\n    _os.mkdir(file, 0700)\nOSError: [Errno 30] Read-only file system: '/tmp/tmpTy2TKK'\n",
+            "Error": "[Errno 30] Read-only file system: '/tmp/tmpTy2TKK'"
+        },
+        "CNMResponseStream": "ProviderResponse"
+    },
+    "cumulus_config": {
+        "state_machine": "arn:aws:states:us-west-2:254524764682:stateMachine:podaacDevCumulusIngestKinesisECSStateMachine-yxbCH73WbqJ4",
+        "execution_name": "c9edbd63-6cc7-48b9-9a0e-f32653d2baeb"
+    }
+}
