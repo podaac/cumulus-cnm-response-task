@@ -121,47 +121,6 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 
 	}
 
-	/*
-	 *
-{
-  "version":"v1.0",
-  "provider": "PODAAC",
-  "deliveryTime":"2018-03-12T16:50:23.458100",
-  "collection": "L2_HR_LAKE_AVG",
-  "identifier": ""c5c828ac328c97b5d3d1036d08898b30-12"",
-  "product":
-    {
-      "name": "L2_HR_LAKE_AVG/product_0001-of-0019.h5",
-      "dataVersion": "1",
-      "files": [
-        {
-          "type": "data",
-          "uri": "s3://podaac-dev-cumulus-test-input/L2_HR_LAKE_AVG/product_0001-of-0019.h5",
-          "name":"product_0001-of-0019.h5",
-          "checksumType": "md5",
-          "checksum": "123454321abc",
-          "size": 96772640
-        }
-      ]
-    }
-}
-	 */
-
-
-	/*
-	 * {
-  "version": "v1.0",
-  "provider": "PODAAC_SWOT",
-  "collection": "SWOT_Prod_l2:1",
-  "processCompleteTime":"2017-09-30T03:45:29.791198",
-  "receivedTime":"2017-09-30T03:42:31.634552",
-  "deliveryTime":"2017-09-30T03:42:29.791198",
-  "identifier": "1234-abcd-efg0-9876",
-  "response": {
-    "status":"SUCCESS"
-  }
-}
-	 */
 	public static String generateOutput(String inputCnm, String exception){
     	//+ "  \"processCompleteTime\":\"2017-09-30T03:45:29.791198\","
     	//+ "  \"receivedTime\":\"2017-09-30T03:42:31.634552\","
@@ -171,7 +130,7 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 
 		JsonObject response = new JsonObject();
 
-		if(exception == null || new String("").equals(exception) ||  new String("None").equals(exception)){
+		if(exception == null || new String("").equals(exception) ||  new String("None").equals(exception) ||  new String("\"None\"").equals(exception)){
 			//success
 			response.addProperty("status", "SUCCESS");
 		}else{
@@ -222,13 +181,12 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
   public String getError(JsonObject input, String key){
 
 		String exception = null;
-		System.out.println("WorkflowException:" + input.get(key));
+		System.out.println("WorkflowException: " + input.get(key));
 
 		if(input.get(key) != null){
 			System.out.println("Step 3.5");
 			exception = input.get(key).toString();
 		}
-
 		return exception;
 	}
 
@@ -253,11 +211,6 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 		System.out.println("Step 3");
 
 		String exception = getError(inputConfig, "WorkflowException");
-
-		/*if(inputKey.get("WorkflowException") != null){
-			System.out.println("Step 3.5");
-			exception = inputKey.get("WorkflowException").getAsString();
-		}*/
 
 		System.out.println("Step 4");
 		System.out.println("Exception" + exception);
