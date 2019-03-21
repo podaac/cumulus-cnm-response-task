@@ -3,12 +3,19 @@ package gov.nasa.cumulus;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
+import com.amazonaws.services.sns.model.CreateTopicRequest;
+import com.amazonaws.services.sns.model.CreateTopicResult;
+import com.amazonaws.services.sns.model.DeleteTopicRequest;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.util.Scanner;
+import java.util.UUID;
 import java.io.File;
 import java.io.IOException;
 
@@ -72,8 +79,6 @@ public class AppTest
 			     sb.append(line).append("\n");
 		  }
 
-
-
 		  scanner.close();
       String text = sb.toString();
       System.out.println("Processing " + text);
@@ -88,7 +93,37 @@ public class AppTest
       System.out.println("Exception: " + ex);
       assertNotNull(ex);
 
+    }
+    
+    /**
+     * this is not portable! relies on the default profile for AWS connectivity. 
+     */
+    public void testSNS(){
+    	
+    	try{
+    		CNMResponse.sendMessageSNS("testMessage","us-west-2", "badTopic");
+    		fail("Should have failed with invalid topic");
+    	}catch(Exception e){}
+    	
+    	AmazonSNS snsClient = AmazonSNSClientBuilder.standard().withRegion("us-west-2").build();
+    	
+    	final CreateTopicRequest createTopicRequest = new CreateTopicRequest("MyTopic-" + UUID.randomUUID().toString());
+    	final CreateTopicResult createTopicResponse = snsClient.createTopic(createTopicRequest);
 
+    	final String topicARN = createTopicResponse.getTopicArn();
+    	
+    	// Print the topic ARN.
+    	System.out.println("TopicArn:" + topicARN);
+    	
+    	try{
+    		CNMResponse.sendMessageSNS("testMessage","us-west-2", topicARN);
+    	}catch(Exception e){
+    		e.printStackTrace();
+    		fail("Should not have failed with valid topic");
+    	}
+    	
+    	final DeleteTopicRequest deleteTopicRequest = new DeleteTopicRequest(topicARN);
+    	snsClient.deleteTopic(deleteTopicRequest);
     }
 
 }

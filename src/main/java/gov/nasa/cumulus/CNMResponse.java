@@ -22,6 +22,10 @@ import com.amazonaws.services.kinesis.model.PutRecordResult;
 import com.amazonaws.services.kinesis.model.Record;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
+import com.amazonaws.services.sns.model.PublishRequest;
+import com.amazonaws.services.sns.model.PublishResult;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -122,8 +126,6 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 	}
 
 	public static String generateOutput(String inputCnm, String exception){
-    	//+ "  \"processCompleteTime\":\"2017-09-30T03:45:29.791198\","
-    	//+ "  \"receivedTime\":\"2017-09-30T03:42:31.634552\","
 		//convert CNM to GranuleObject
 		JsonElement jelement = new JsonParser().parse(inputCnm);
 		JsonObject inputKey = jelement.getAsJsonObject();
@@ -155,7 +157,25 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 		return new Gson().toJson(inputKey);
 	}
 
-	private static void sendMessage(String response, String region, String streamName) {
+	/**
+	 * @param response The message to send to the kinesis stream
+	 * @param region an AWS region, probably us-west-2 or us-east-1
+	 * @param topicArn The SNS topic ARN to which the message should be sent
+	 */
+	public static void sendMessageSNS(String response, String region, String topicArn){
+		
+		AmazonSNS snsClient = AmazonSNSClientBuilder.standard().withRegion(region).build();
+		final PublishRequest publishRequest = new PublishRequest(topicArn, response);
+		final PublishResult publishResponse = snsClient.publish(publishRequest);
+
+	}
+	
+	/**
+	 * @param response The message to send to the kinesis stream
+	 * @param region an AWS region, probably us-west-2 or us-east-1
+	 * @param streamName - the stream name, not ARN, of the kinesis stream
+	 */
+	public static void sendMessageKinesis(String response, String region, String streamName) {
 
         //AWSCredentials credentials = CredentialUtils.getCredentialsProvider().getCredentials();
         AmazonKinesis kinesisClient = new AmazonKinesisClient();
@@ -178,7 +198,7 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 	}
 
 
-  public String getError(JsonObject input, String key){
+        public String getError(JsonObject input, String key){
 
 		String exception = null;
 		System.out.println("WorkflowException: " + input.get(key));
@@ -195,7 +215,6 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 	// CNMResponseStream
 	// WorkflowException
 	// region
-
 	public String PerformFunction(String input, Context context) throws Exception {
 
 		System.out.println("Processing " + input);
@@ -205,24 +224,23 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 
 
 		JsonObject  inputConfig = inputKey.getAsJsonObject("config");
-		System.out.println("Step 2");
-
 		String cnm = new Gson().toJson(inputConfig.get("OriginalCNM"));
-		System.out.println("Step 3");
-
 		String exception = getError(inputConfig, "WorkflowException");
 
-		System.out.println("Step 4");
-		System.out.println("Exception" + exception);
 
 		String output = CNMResponse.generateOutput(cnm,exception);
-		System.out.println("Step 5");
-		System.out.println("got: " + output);
-
-
+		String method = inputConfig.get("type").getAsString();
 		String region = inputConfig.get("region").getAsString();
-		String cnmResponseStream = inputConfig.get("CNMResponseStream").getAsString();
-		CNMResponse.sendMessage(output, region, cnmResponseStream);
+		String endpoint = inputConfig.get("response-endpoint").getAsString();
+		
+		/*
+		 * This needs to be refactored into a factory taking 'type' as an input
+		 */
+		if(method != null && method.equals("kinesis")){
+			CNMResponse.sendMessageKinesis(output, region, endpoint);
+		}else if(method != null && method.equals("sns")){
+			CNMResponse.sendMessageSNS(output, region, endpoint);
+		}
 
 		/* create new object:
 		 *
@@ -234,8 +252,5 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 		bigOutput.add("input", new JsonParser().parse(input).getAsJsonObject());
 
 		return new Gson().toJson(bigOutput);
-
 	}
-
-
 }
