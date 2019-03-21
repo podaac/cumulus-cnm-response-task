@@ -163,11 +163,9 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 	 * @param topicArn The SNS topic ARN to which the message should be sent
 	 */
 	public static void sendMessageSNS(String response, String region, String topicArn){
-		
 		AmazonSNS snsClient = AmazonSNSClientBuilder.standard().withRegion(region).build();
 		final PublishRequest publishRequest = new PublishRequest(topicArn, response);
-		final PublishResult publishResponse = snsClient.publish(publishRequest);
-
+		/*final PublishResult publishResponse =*/ snsClient.publish(publishRequest);
 	}
 	
 	/**
