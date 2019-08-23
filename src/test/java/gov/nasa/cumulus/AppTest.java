@@ -14,6 +14,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
+import java.nio.file.Files;
 import java.util.Scanner;
 import java.util.UUID;
 import java.io.File;
@@ -126,4 +128,23 @@ public class AppTest
     	snsClient.deleteTopic(deleteTopicRequest);
     }
 
+    public void testErrorCode() {
+    	String fileNotFound = "{\n" +
+				"    \"Error\": \"FileNotFound\",\n" +
+				"    \"Cause\": \"{\\\"errorMessage\\\":\\\"Source file not found s3://podaac-sndbx-cumulus-test-input/L2_HR_PIXC/SWOT_L2_HR_PIXC_001_005_012R_20210612T000000_20210612T000022_PGA2_03.nc.h5\\\",\\\"errorType\\\":\\\"FileNotFound\\\",\\\"stackTrace\\\":[\\\"S3Granule.sync (/var/task/index.js:127702:13)\\\",\\\"<anonymous>\\\",\\\"process._tickDomainCallback (internal/process/next_tick.js:228:7)\\\"]}\"\n" +
+				"  }";
+
+		JsonObject responseFileNotFound = CNMResponse.getResponseObject(fileNotFound);
+		assertEquals("FAILURE", responseFileNotFound.get("status").getAsString());
+		assertEquals(CNMResponse.ErrorCode.TRANSFER_ERROR.toString(), responseFileNotFound.get("errorCode").getAsString());
+
+		String invalidChecksum = "{\n" +
+				"    \"Error\": \"InvalidChecksum\",\n" +
+				"    \"Cause\": \"{\\\"errorMessage\\\":\\\"Invalid checksum for S3 object s3://podaac-sndbx-cumulus-internal/file-staging/podaac-sndbx-cumulus/L2_HR_PIXC___1/SWOT_L2_HR_PIXC_001_005_012R_20210612T000000_20210612T000022_PGA2_03.nc with type md5 and expected sum 4719793a1005470ac6744643cbe27b6cdd\\\",\\\"errorType\\\":\\\"InvalidChecksum\\\",\\\"stackTrace\\\":[\\\"Object.module.exports.../../packages/common/aws.js.exports.validateS3ObjectChecksum (/var/task/index.js:1695:9)\\\",\\\"<anonymous>\\\",\\\"process._tickDomainCallback (internal/process/next_tick.js:228:7)\\\"]}\"\n" +
+				"  }";
+
+		JsonObject responseInvalidChecksum = CNMResponse.getResponseObject(invalidChecksum);
+		assertEquals("FAILURE", responseInvalidChecksum.get("status").getAsString());
+		assertEquals(CNMResponse.ErrorCode.VALIDATION_ERROR.toString(), responseInvalidChecksum.get("errorCode").getAsString());
+	}
 }

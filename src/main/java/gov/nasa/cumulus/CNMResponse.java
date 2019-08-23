@@ -39,6 +39,8 @@ import cumulus_message_adapter.message_parser.MessageParser;
 
 public class CNMResponse implements  ITask, RequestHandler<String, String>{
 
+	public enum ErrorCode {VALIDATION_ERROR, TRANSFER_ERROR, PROCESSING_ERROR};
+
 	public static void main( String[] args ) throws Exception
     {
 		CNMResponse c = new CNMResponse();
@@ -125,11 +127,7 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 
 	}
 
-	public static String generateOutput(String inputCnm, String exception){
-		//convert CNM to GranuleObject
-		JsonElement jelement = new JsonParser().parse(inputCnm);
-		JsonObject inputKey = jelement.getAsJsonObject();
-
+	public static JsonObject getResponseObject(String exception) {
 		JsonObject response = new JsonObject();
 
 		if(exception == null || new String("").equals(exception) ||  new String("None").equals(exception) ||  new String("\"None\"").equals(exception)){
@@ -140,13 +138,36 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 			response.addProperty("status", "FAILURE");
 
 			//logic for failure types here
+			JsonObject workflowException = new JsonParser().parse(exception).getAsJsonObject();
+
+			String error = workflowException.get("Error").getAsString();
+			switch(error) {
+				case "FileNotFound":
+					response.addProperty("errorCode", ErrorCode.TRANSFER_ERROR.toString());
+					break;
+				case "InvalidChecksum":
+					response.addProperty("errorCode", ErrorCode.VALIDATION_ERROR.toString());
+					break;
+				default:
+					response.addProperty("errorCode", ErrorCode.PROCESSING_ERROR.toString());
+			}
+
+			JsonObject cause = new JsonParser().parse(workflowException.get("Cause").getAsString()).getAsJsonObject();
+			response.addProperty("errorMessage", cause.get("errorMessage").getAsString());
 		}
+		return response;
+	}
+
+	public static String generateOutput(String inputCnm, String exception){
+		//convert CNM to GranuleObject
+		JsonElement jelement = new JsonParser().parse(inputCnm);
+		JsonObject inputKey = jelement.getAsJsonObject();
 
 		JsonElement sizeElement = inputKey.get("product").getAsJsonObject().get("files").getAsJsonArray().get(0).getAsJsonObject().get("size");
 
 		inputKey.add("productSize", sizeElement);
 		inputKey.remove("product");
-		inputKey.add("response", response);
+		inputKey.add("response", getResponseObject(exception));
 
 		TimeZone tz = TimeZone.getTimeZone("UTC");
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
