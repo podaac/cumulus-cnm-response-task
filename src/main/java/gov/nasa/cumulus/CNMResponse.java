@@ -31,6 +31,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonParseException;
 
 import cumulus_message_adapter.message_parser.ITask;
 import cumulus_message_adapter.message_parser.MessageAdapterException;
@@ -152,8 +153,13 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 					response.addProperty("errorCode", ErrorCode.PROCESSING_ERROR.toString());
 			}
 
-			JsonObject cause = new JsonParser().parse(workflowException.get("Cause").getAsString()).getAsJsonObject();
-			response.addProperty("errorMessage", cause.get("errorMessage").getAsString());
+			String causeString = workflowException.get("Cause").getAsString();
+			try {
+				JsonObject cause = new JsonParser().parse(causeString).getAsJsonObject();
+				response.addProperty("errorMessage", cause.get("errorMessage").getAsString());
+			} catch (JsonParseException e) {
+				response.addProperty("errorMessage", causeString);
+			}
 		}
 		return response;
 	}

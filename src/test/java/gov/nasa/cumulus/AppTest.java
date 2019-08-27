@@ -146,5 +146,15 @@ public class AppTest
 		JsonObject responseInvalidChecksum = CNMResponse.getResponseObject(invalidChecksum);
 		assertEquals("FAILURE", responseInvalidChecksum.get("status").getAsString());
 		assertEquals(CNMResponse.ErrorCode.VALIDATION_ERROR.toString(), responseInvalidChecksum.get("errorCode").getAsString());
+
+		String notFound = "{\n" +
+				"    \"Error\": \"An error occurred (404) when calling the HeadObject operation: Not Found\",\n" +
+				"    \"Cause\": \"An error occurred (404) when calling the HeadObject operation: Not Found\"\n" +
+				"  }";
+
+		JsonObject responseNotFound = CNMResponse.getResponseObject(notFound);
+		assertEquals("FAILURE", responseNotFound.get("status").getAsString());
+		assertEquals(CNMResponse.ErrorCode.PROCESSING_ERROR.toString(), responseNotFound.get("errorCode").getAsString());
+		assertEquals("An error occurred (404) when calling the HeadObject operation: Not Found", responseNotFound.get("errorMessage").getAsString());
 	}
 }
