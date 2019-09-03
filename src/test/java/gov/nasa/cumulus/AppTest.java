@@ -156,5 +156,35 @@ public class AppTest
 		assertEquals("FAILURE", responseNotFound.get("status").getAsString());
 		assertEquals(CNMResponse.ErrorCode.PROCESSING_ERROR.toString(), responseNotFound.get("errorCode").getAsString());
 		assertEquals("An error occurred (404) when calling the HeadObject operation: Not Found", responseNotFound.get("errorMessage").getAsString());
+
+		String remoteResourceError = "{\n" +
+				"    \"Error\": \"RemoteResourceError\",\n" +
+				"    \"Cause\": \"Placeholder for RemoteResourceError message\"\n" +
+				"  }";
+
+		JsonObject responseRemoteResourceError = CNMResponse.getResponseObject(remoteResourceError);
+		assertEquals("FAILURE", responseRemoteResourceError.get("status").getAsString());
+		assertEquals(CNMResponse.ErrorCode.TRANSFER_ERROR.toString(), responseRemoteResourceError.get("errorCode").getAsString());
+		assertEquals("Placeholder for RemoteResourceError message", responseRemoteResourceError.get("errorMessage").getAsString());
+
+		String connectionTimeout = "{\n" +
+				"    \"Error\": \"ConnectionTimeout\",\n" +
+				"    \"Cause\": \"Placeholder for ConnectionTimeout message\"\n" +
+				"  }";
+
+		JsonObject responseConnectionTimeout = CNMResponse.getResponseObject(connectionTimeout);
+		assertEquals("FAILURE", responseConnectionTimeout.get("status").getAsString());
+		assertEquals(CNMResponse.ErrorCode.TRANSFER_ERROR.toString(), responseConnectionTimeout.get("errorCode").getAsString());
+		assertEquals("Placeholder for ConnectionTimeout message", responseConnectionTimeout.get("errorMessage").getAsString());
+
+		String unexpectedFileSize = "{\n" +
+				"    \"Error\": \"UnexpectedFileSize\",\n" +
+				"    \"Cause\": \"Placeholder for UnexpectedFileSize message\"\n" +
+				"  }";
+
+		JsonObject responseUnexpectedFileSize = CNMResponse.getResponseObject(unexpectedFileSize);
+		assertEquals("FAILURE", responseUnexpectedFileSize.get("status").getAsString());
+		assertEquals(CNMResponse.ErrorCode.VALIDATION_ERROR.toString(), responseUnexpectedFileSize.get("errorCode").getAsString());
+		assertEquals("Placeholder for UnexpectedFileSize message", responseUnexpectedFileSize.get("errorMessage").getAsString());
 	}
 }

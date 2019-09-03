@@ -144,9 +144,12 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 			String error = workflowException.get("Error").getAsString();
 			switch(error) {
 				case "FileNotFound":
+				case "RemoteResourceError":
+				case "ConnectionTimeout":
 					response.addProperty("errorCode", ErrorCode.TRANSFER_ERROR.toString());
 					break;
 				case "InvalidChecksum":
+				case "UnexpectedFileSize":
 					response.addProperty("errorCode", ErrorCode.VALIDATION_ERROR.toString());
 					break;
 				default:
@@ -157,7 +160,7 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 			try {
 				JsonObject cause = new JsonParser().parse(causeString).getAsJsonObject();
 				response.addProperty("errorMessage", cause.get("errorMessage").getAsString());
-			} catch (JsonParseException e) {
+			} catch (Exception e) {
 				response.addProperty("errorMessage", causeString);
 			}
 		}
