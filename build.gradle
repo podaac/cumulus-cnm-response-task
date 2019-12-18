@@ -7,11 +7,11 @@ dependencies {
 task buildZip(type: Zip) {
 
     from compileJava
-    from processResources              
+    from processResources
     into('lib') {
         from configurations.runtime
     }
-    archiveName 'cnmResponse-1.0.5.zip'
+    archiveName 'cnmResponse-1.0.6.zip'
 }
 
 build.dependsOn buildZip

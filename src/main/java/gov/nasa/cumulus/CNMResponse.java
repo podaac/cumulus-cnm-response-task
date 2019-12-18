@@ -7,10 +7,8 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Base64;
 import java.util.Date;
 import java.util.TimeZone;
-import java.util.Base64.Decoder;
 
 import org.apache.commons.io.IOUtils;
 
@@ -18,20 +16,15 @@ import com.amazonaws.regions.RegionUtils;
 import com.amazonaws.services.kinesis.AmazonKinesis;
 import com.amazonaws.services.kinesis.AmazonKinesisClient;
 import com.amazonaws.services.kinesis.model.PutRecordRequest;
-import com.amazonaws.services.kinesis.model.PutRecordResult;
-import com.amazonaws.services.kinesis.model.Record;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.amazonaws.services.sns.model.PublishRequest;
-import com.amazonaws.services.sns.model.PublishResult;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.JsonParseException;
 
 import cumulus_message_adapter.message_parser.ITask;
 import cumulus_message_adapter.message_parser.MessageAdapterException;
@@ -88,24 +81,14 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 		}
 	}
 
-	public void handleRequestStreams(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
-
+	public void handleRequestStreams(InputStream inputStream, OutputStream outputStream, Context context) throws IOException, MessageAdapterException {
 		MessageParser parser = new MessageParser();
 
-		try
-		{
-			String input =IOUtils.toString(inputStream, "UTF-8");
-			context.getLogger().log(input);
-			String output = parser.RunCumulusTask(input, context, new CNMResponse());
-			System.out.println("Output: " + output);
-			outputStream.write(output.getBytes(Charset.forName("UTF-8")));
-		}
-		catch(MessageAdapterException e)
-		{
-			e.printStackTrace();
-			outputStream.write(e.getMessage().getBytes(Charset.forName("UTF-8")));
-		}
-
+		String input =IOUtils.toString(inputStream, "UTF-8");
+		context.getLogger().log(input);
+		String output = parser.RunCumulusTask(input, context, new CNMResponse());
+		System.out.println("Output: " + output);
+		outputStream.write(output.getBytes(Charset.forName("UTF-8")));
 	}
 
 
@@ -197,7 +180,7 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 		final PublishRequest publishRequest = new PublishRequest(topicArn, response);
 		/*final PublishResult publishResponse =*/ snsClient.publish(publishRequest);
 	}
-	
+
 	/**
 	 * @param response The message to send to the kinesis stream
 	 * @param region an AWS region, probably us-west-2 or us-east-1
@@ -260,7 +243,7 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 		String method = inputConfig.get("type").getAsString();
 		String region = inputConfig.get("region").getAsString();
 		String endpoint = inputConfig.get("response-endpoint").getAsString();
-		
+
 		/*
 		 * This needs to be refactored into a factory taking 'type' as an input
 		 */
