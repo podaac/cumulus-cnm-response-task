@@ -66,7 +66,7 @@ public class AppTest
     	+ "  }"
     	+ "}";
 
-    	String output = CNMResponse.generateOutput(cnm, "");
+    	String output = CNMResponse.generateOutput(cnm, "", null);
     	System.out.println(output);
         assertNotNull(output);
     }
@@ -186,5 +186,38 @@ public class AppTest
 		assertEquals("FAILURE", responseUnexpectedFileSize.get("status").getAsString());
 		assertEquals(CNMResponse.ErrorCode.VALIDATION_ERROR.toString(), responseUnexpectedFileSize.get("errorCode").getAsString());
 		assertEquals("Placeholder for UnexpectedFileSize message", responseUnexpectedFileSize.get("errorMessage").getAsString());
+	}
+
+	/**
+	 * Test success CNM response
+	 */
+	public void testSuccessCnm() {
+		ClassLoader classLoader = getClass().getClassLoader();
+		File inputJsonFile = new File(classLoader.getResource("workflow.success.json").getFile());
+
+		String input = "";
+		try {
+			input = new String(Files.readAllBytes(inputJsonFile.toPath()));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		JsonElement jelement = new JsonParser().parse(input);
+		JsonObject inputKey = jelement.getAsJsonObject();
+
+		JsonObject  inputConfig = inputKey.getAsJsonObject("config");
+		String cnm = new Gson().toJson(inputConfig.get("OriginalCNM"));
+
+		JsonObject granule = inputKey.get("input").getAsJsonObject().get("granules").getAsJsonArray().get(0).getAsJsonObject();
+
+		String output = CNMResponse.generateOutput(cnm, null, granule);
+		JsonElement outputElement = new JsonParser().parse(output);
+		JsonObject response = outputElement.getAsJsonObject().get("response").getAsJsonObject();
+		assertEquals("SUCCESS", response.get("status").getAsString());
+
+		JsonObject ingestionMetadata = response.get("ingestionMetadata").getAsJsonObject();
+		assertNotNull(ingestionMetadata);
+		assertEquals("G1234313662-POCUMULUS", ingestionMetadata.get("catalogId").getAsString());
+		assertEquals("https://cmr.uat.earthdata.nasa.gov/search/granules.json?concept_id=G1234313662-POCUMULUS", ingestionMetadata.get("catalogUrl").getAsString());
 	}
 }

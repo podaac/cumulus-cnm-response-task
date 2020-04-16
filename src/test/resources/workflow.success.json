@@ -1,0 +1,92 @@
+{
+    "input": {
+        "granules": [
+            {
+                "files": [
+                    {
+                        "checksumType": "md5",
+                        "name": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc",
+                        "filepath": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc",
+                        "checksum": "3b6de83e361a01867a9e541a4bf771dc",
+                        "bucket": "test-protected",
+                        "filename": "s3://test-protected/Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc",
+                        "path": "c1f1be11-9cbd-4620-ad07-9a7f2afb8349/store/merged_alt/open/L2/TP_J1_OSTM/cycles",
+                        "url_path": "",
+                        "type": "data",
+                        "duplicate_found": true,
+                        "size": 18795152
+                    },
+                    {
+                        "name": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.cmr.json",
+                        "filepath": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.cmr.json",
+                        "bucket": "test-public",
+                        "filename": "s3://test-public/Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.cmr.json",
+                        "fileSize": 1236,
+                        "url_path": "",
+                        "type": "metadata"
+                    }
+                ],
+                "cmrLink": "https://cmr.uat.earthdata.nasa.gov/search/granules.json?concept_id=G1234313662-POCUMULUS",
+                "cmrConceptId": "G1234313662-POCUMULUS",
+                "dataType": "MERGED_TP_J1_OSTM_OST_CYCLES_V42",
+                "cmrMetadataFormat": "umm_json_v1_6",
+                "sync_granule_duration": 3136,
+                "granuleId": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2",
+                "version": "1",
+                "published": true,
+                "post_to_cmr_duration": 11650
+            }
+        ]
+    },
+    "messageConfig": {
+        "outputs": [
+            {
+                "source": "{$.cnm}",
+                "destination": "{$.meta.cnmResponse}"
+            },
+            {
+                "source": "{$.input.input}",
+                "destination": "{$.payload}"
+            }
+        ]
+    },
+    "config": {
+        "response-endpoint": "arn:aws:sns:us-west-2:111111111111:test-provider-response-sns",
+        "OriginalCNM": {
+            "product": {
+                "files": [
+                    {
+                        "checksumType": "md5",
+                        "checksum": "",
+                        "uri": "s3://podaac-sndbx-staging/c1f1be11-9cbd-4620-ad07-9a7f2afb8349/store/merged_alt/open/L2/TP_J1_OSTM/cycles/Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc",
+                        "name": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc",
+                        "type": "data",
+                        "size": 18795152
+                    },
+                    {
+                        "checksumType": "md5",
+                        "checksum": "",
+                        "uri": "s3://podaac-sndbx-staging/c1f1be11-9cbd-4620-ad07-9a7f2afb8349/store/merged_alt/open/L2/TP_J1_OSTM/cycles/Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc.md5",
+                        "name": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc.md5",
+                        "type": "data",
+                        "size": 83
+                    }
+                ],
+                "name": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc"
+            },
+            "receivedTime": "2020-04-08T16:00:16.958Z",
+            "collection": "MERGED_TP_J1_OSTM_OST_CYCLES_V42",
+            "version": "1.1",
+            "provider": "NASA/JPL/PO.DAAC",
+            "submissionTime": "2020-04-08 15:59:15.186779",
+            "identifier": "c1f1be11-9cbd-4620-ad07-9a7f2afb8349"
+        },
+        "region": "us-west-2",
+        "WorkflowException": "None",
+        "type": "sns"
+    },
+    "cumulus_config": {
+        "state_machine": "arn:aws:states:us-west-2:111111111111:stateMachine:test-IngestKinesis",
+        "execution_name": "b5729c30-226e-4184-8993-cfad70a2758b"
+    }
+}

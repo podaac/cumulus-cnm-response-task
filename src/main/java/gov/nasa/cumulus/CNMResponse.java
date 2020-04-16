@@ -35,40 +35,6 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 
 	public enum ErrorCode {VALIDATION_ERROR, TRANSFER_ERROR, PROCESSING_ERROR};
 
-	public static void main( String[] args ) throws Exception
-    {
-		CNMResponse c = new CNMResponse();
-
-		String input = "{"
-			 +" \"version\":\"v1.0\","
-			 +" \"provider\": \"PODAAC\","
-			  +"\"deliveryTime\":\"2018-03-12T16:50:23.458100\","
-			  +"\"collection\": \"L2_HR_LAKE_AVG\","
-			  +"\"identifier\": \"c5c828ac328c97b5d3d1036d08898b30-12\","
-			  +"\"product\":"
-			  +"  {"
-			  +"    \"name\": \"L2_HR_LAKE_AVG/product_0001-of-0019.h5\","
-			  +"    \"dataVersion\": \"1\","
-			  +"    \"files\": ["
-			  +"      {"
-			  +"        \"type\": \"data\","
-			  +"        \"uri\": \"s3://podaac-dev-cumulus-test-input/L2_HR_LAKE_AVG/product_0001-of-0019.h5\","
-			  +"        \"name\":\"product_0001-of-0019.h5\","
-			  +"        \"checksumType\": \"md5\","
-			  +"        \"checksum\": \"123454321abc\","
-			  +"        \"size\": 96772640"
-			  +"      }"
-			  +"    ]"
-			  +"  }"
-			  +"},"
-			  + "\"config\": {}"
-			  +"}";
-
-		String output = CNMResponse.generateOutput(input, null);
-		System.out.println(output);
-    }
-
-
 	public String handleRequest(String input, Context context) {
 		MessageParser parser = new MessageParser();
 		try
@@ -150,16 +116,24 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 		return response;
 	}
 
-	public static String generateOutput(String inputCnm, String exception){
+	public static String generateOutput(String inputCnm, String exception, JsonObject granule){
 		//convert CNM to GranuleObject
 		JsonElement jelement = new JsonParser().parse(inputCnm);
 		JsonObject inputKey = jelement.getAsJsonObject();
 
 		JsonElement sizeElement = inputKey.get("product").getAsJsonObject().get("files").getAsJsonArray().get(0).getAsJsonObject().get("size");
 
-		inputKey.add("productSize", sizeElement);
 		inputKey.remove("product");
-		inputKey.add("response", getResponseObject(exception));
+
+		JsonObject response = getResponseObject(exception);
+		inputKey.add("response", response);
+
+		if (granule != null && response.get("status").getAsString().equals("SUCCESS")) {
+			JsonObject ingestionMetadata = new JsonObject();
+			ingestionMetadata.addProperty("catalogId", granule.get("cmrConceptId").getAsString());
+			ingestionMetadata.addProperty("catalogUrl", granule.get("cmrLink").getAsString());
+			response.add("ingestionMetadata", ingestionMetadata);
+		}
 
 		TimeZone tz = TimeZone.getTimeZone("UTC");
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
@@ -238,8 +212,9 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 		String cnm = new Gson().toJson(inputConfig.get("OriginalCNM"));
 		String exception = getError(inputConfig, "WorkflowException");
 
+		JsonObject granule = inputKey.get("input").getAsJsonObject().get("granules").getAsJsonArray().get(0).getAsJsonObject();
 
-		String output = CNMResponse.generateOutput(cnm,exception);
+		String output = CNMResponse.generateOutput(cnm,exception, granule);
 		String method = inputConfig.get("type").getAsString();
 		String region = inputConfig.get("region").getAsString();
 		String endpoint = inputConfig.get("response-endpoint").getAsString();
