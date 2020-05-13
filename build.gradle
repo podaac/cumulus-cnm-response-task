@@ -11,7 +11,7 @@ task buildZip(type: Zip) {
     into('lib') {
         from configurations.runtime
     }
-    archiveName 'cnmResponse-1.0.7-SNAPSHOT.zip'
+    archiveName 'cnmResponse-1.0.7.zip'
 }
 
 build.dependsOn buildZip
