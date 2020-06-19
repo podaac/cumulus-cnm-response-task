@@ -65,6 +65,7 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 			JsonObject workflowException = new JsonParser().parse(exception).getAsJsonObject();
 
 			String error = workflowException.get("Error").getAsString();
+			AdapterLogger.LogWarning(CNMResponse.class.getName() + " error:" + error);
 			switch(error) {
 				case "FileNotFound":
 				case "RemoteResourceError":
@@ -80,10 +81,15 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 			}
 
 			String causeString = workflowException.get("Cause").getAsString();
+			AdapterLogger.LogWarning(CNMResponse.class.getName() + " causeString:" + causeString);
 			try {
 				JsonObject cause = new JsonParser().parse(causeString).getAsJsonObject();
-				response.addProperty("errorMessage", cause.get("errorMessage").getAsString());
+				AdapterLogger.LogWarning(CNMResponse.class.getName() + " cause:" + cause);
+				String errorMessage = cause.get("errorMessage").getAsString();
+				AdapterLogger.LogWarning(CNMResponse.class.getName() + " errorMessage:" + errorMessage);
+				response.addProperty("errorMessage", errorMessage);
 			} catch (Exception e) {
+				AdapterLogger.LogError(CNMResponse.class.getName() + " Exception:" + e);
 				response.addProperty("errorMessage", causeString);
 			}
 		}
