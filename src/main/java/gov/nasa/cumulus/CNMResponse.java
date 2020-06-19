@@ -21,31 +21,33 @@ import com.google.gson.JsonParser;
 import cumulus_message_adapter.message_parser.ITask;
 import cumulus_message_adapter.message_parser.MessageAdapterException;
 import cumulus_message_adapter.message_parser.MessageParser;
+import cumulus_message_adapter.message_parser.AdapterLogger;
 
 
 public class CNMResponse implements  ITask, RequestHandler<String, String>{
-
+	String className = this.getClass().getName();
 	public enum ErrorCode {VALIDATION_ERROR, TRANSFER_ERROR, PROCESSING_ERROR};
 
 	public String handleRequest(String input, Context context) {
 		MessageParser parser = new MessageParser();
 		try
 		{
+			AdapterLogger.LogInfo(this.className + " handleRequest input:" + input);
 			return parser.RunCumulusTask(input, context, new CNMResponse());
 		}
 		catch(MessageAdapterException e)
 		{
+			AdapterLogger.LogError(this.className + " handleRequest error:" + e.getMessage());
 			return e.getMessage();
 		}
 	}
 
 	public void handleRequestStreams(InputStream inputStream, OutputStream outputStream, Context context) throws IOException, MessageAdapterException {
 		MessageParser parser = new MessageParser();
-
 		String input =IOUtils.toString(inputStream, "UTF-8");
-		context.getLogger().log(input);
+		AdapterLogger.LogInfo(this.className + " handleRequestStreams input:" + input);
 		String output = parser.RunCumulusTask(input, context, new CNMResponse());
-		System.out.println("Output: " + output);
+		AdapterLogger.LogInfo(this.className + " handleRequestStreams output:" + output);
 		outputStream.write(output.getBytes(Charset.forName("UTF-8")));
 	}
 
@@ -119,11 +121,12 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
     public String getError(JsonObject input, String key){
 
 		String exception = null;
-		System.out.println("WorkflowException: " + input.get(key));
 
 		if(input.get(key) != null){
-			System.out.println("Step 3.5");
 			exception = input.get(key).toString();
+			AdapterLogger.LogError(this.className + " WorkflowException:" + input.get(key));
+		} else {
+			AdapterLogger.LogError(this.className + " WorkflowException: not finding exception by key");
 		}
 		return exception;
 	}
@@ -134,9 +137,7 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 	// WorkflowException
 	// region
 	public String PerformFunction(String input, Context context) throws Exception {
-
-		System.out.println("Processing " + input);
-
+		AdapterLogger.LogError(this.className + " PerformFunction Processing:" + input);
 		JsonElement jelement = new JsonParser().parse(input);
 		JsonObject inputKey = jelement.getAsJsonObject();
 
@@ -150,7 +151,7 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 		String output = CNMResponse.generateOutput(cnm,exception, granule);
 		String method = inputConfig.get("type").getAsString();
 		String region = inputConfig.get("region").getAsString();
-
+		AdapterLogger.LogInfo(this.className + " region:" + region + " method:" + method);
 		JsonElement responseEndpoint = inputConfig.get("response-endpoint");
 		if (method != null) {
 			if (responseEndpoint.isJsonArray()) {
