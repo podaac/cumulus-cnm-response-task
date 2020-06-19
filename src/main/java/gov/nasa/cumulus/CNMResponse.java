@@ -56,9 +56,11 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 
 		if(exception == null || new String("").equals(exception) ||  new String("None").equals(exception) ||  new String("\"None\"").equals(exception)){
 			//success
+			AdapterLogger.LogInfo(CNMResponse.class.getName() + " status: SUCCESS");
 			response.addProperty("status", "SUCCESS");
 		}else{
 			//fail
+			AdapterLogger.LogWarning(CNMResponse.class.getName() + " status: FAILURE");
 			response.addProperty("status", "FAILURE");
 
 			//logic for failure types here
