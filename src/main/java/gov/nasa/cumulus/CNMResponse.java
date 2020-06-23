@@ -32,7 +32,7 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 		MessageParser parser = new MessageParser();
 		try
 		{
-			AdapterLogger.LogInfo(this.className + " handleRequest input:" + input);
+			AdapterLogger.LogDebug(this.className + " handleRequest input:" + input);
 			return parser.RunCumulusTask(input, context, new CNMResponse());
 		}
 		catch(MessageAdapterException e)
@@ -45,9 +45,9 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 	public void handleRequestStreams(InputStream inputStream, OutputStream outputStream, Context context) throws IOException, MessageAdapterException {
 		MessageParser parser = new MessageParser();
 		String input =IOUtils.toString(inputStream, "UTF-8");
-		AdapterLogger.LogInfo(this.className + " handleRequestStreams input:" + input);
+		AdapterLogger.LogDebug(this.className + " handleRequestStreams input:" + input);
 		String output = parser.RunCumulusTask(input, context, new CNMResponse());
-		AdapterLogger.LogInfo(this.className + " handleRequestStreams output:" + output);
+		AdapterLogger.LogDebug(this.className + " handleRequestStreams output:" + output);
 		outputStream.write(output.getBytes(Charset.forName("UTF-8")));
 	}
 
@@ -145,7 +145,7 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 	// WorkflowException
 	// region
 	public String PerformFunction(String input, Context context) throws Exception {
-		AdapterLogger.LogError(this.className + " PerformFunction Processing:" + input);
+		AdapterLogger.LogDebug(this.className + " Entered PerformFunction");
 		JsonElement jelement = new JsonParser().parse(input);
 		JsonObject inputKey = jelement.getAsJsonObject();
 
