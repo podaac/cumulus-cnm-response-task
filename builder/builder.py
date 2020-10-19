@@ -10,7 +10,7 @@ logger:object = logging.getLogger('Artifact Builder ===>')
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 class builder:
     def __init__(self, *args, **kwargs) -> None:
-        print('CMR Query object created')
+        print('Builder started')
 
     def find_executable(self, executable, path=None):
         """Tries to find 'executable' in the directories listed in 'path'.
