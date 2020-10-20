@@ -45,7 +45,7 @@ class builder:
 
 @click.command()
 @click.option('-d', '--project-dir',
-              help='password for git', required=True, type=str)
+              help='Project working directory', required=True, type=str)
 @click.option('-a', '--artifact-base-name',
               help='artifact base name without .zip. Ex. cnmToGranule', required=True, type=str)
 def process(project_dir:str, artifact_base_name:str) -> None:
@@ -88,7 +88,7 @@ def process(project_dir:str, artifact_base_name:str) -> None:
     stream_mvn_test = os.popen('{} test'.format(mvn_executable))
     str_test_result: str = stream_mvn_test.read()
     logger.info('Entire MVN TEST output: {}'.format(str_test_result))
-    if str_test_result.find('Failures: 0') != -1:
+    if str_test_result.find('Failed tests:') == -1:
         logger.info('MAVEN TEST SUCCEEDED.  Continue ...')
     else:
         logger.error('MAVEN TEST FAILURE.  Existing ...')
