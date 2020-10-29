@@ -72,7 +72,8 @@
                         "size": 83
                     }
                 ],
-                "name": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc"
+                "name": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc",
+                "dataVersion": "1.0"
             },
             "receivedTime": "2020-04-08T16:00:16.958Z",
             "collection": "MERGED_TP_J1_OSTM_OST_CYCLES_V42",

@@ -42,7 +42,7 @@
                     }
                 ],
                 "name": "L1B_HR_SLC/L1B_HR_SLC_product_0001-of-4154.h5",
-                "dataVersion": "1"
+                "dataVersion": "1.0"
             },
             "trace": "aNewTrace",
             "collection": "L1B_HR_SLC",

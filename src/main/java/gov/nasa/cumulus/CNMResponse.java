@@ -105,8 +105,6 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 
 		JsonElement sizeElement = inputKey.get("product").getAsJsonObject().get("files").getAsJsonArray().get(0).getAsJsonObject().get("size");
 
-		inputKey.remove("product");
-
 		JsonObject response = getResponseObject(exception);
 		inputKey.add("response", response);
 
