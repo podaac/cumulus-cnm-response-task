@@ -118,7 +118,7 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 		}
 
 		TimeZone tz = TimeZone.getTimeZone("UTC");
-		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 		df.setTimeZone(tz);
 		String nowAsISO = df.format(new Date());
 
