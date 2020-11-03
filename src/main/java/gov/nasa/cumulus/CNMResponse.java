@@ -4,19 +4,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import com.google.gson.*;
 import org.apache.commons.io.IOUtils;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import cumulus_message_adapter.message_parser.ITask;
 import cumulus_message_adapter.message_parser.MessageAdapterException;
@@ -98,12 +98,27 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 		return response;
 	}
 
-	public static String generateOutput(String inputCnm, String exception, JsonObject granule){
+	public static String generateOutput(String inputCnm, String exception, JsonObject granule, JsonObject  inputConfig){
 		//convert CNM to GranuleObject
 		JsonElement jelement = new JsonParser().parse(inputCnm);
 		JsonObject inputKey = jelement.getAsJsonObject();
+		String distribute_url = inputConfig.getAsJsonPrimitive("distribution_endpoint").getAsString();
 
-		JsonElement sizeElement = inputKey.get("product").getAsJsonObject().get("files").getAsJsonArray().get(0).getAsJsonObject().get("size");
+		// inputKey.remove("product");
+		JsonArray files = inputKey.getAsJsonObject("product").getAsJsonArray("files");
+		files.forEach( (JsonElement f) -> {
+			Matcher m = getSourceBucketAndKey(f.getAsJsonObject().getAsJsonPrimitive("uri").getAsString());
+			if (m.find()) {
+				String sourceBucket = m.group(1);
+				String key = m.group(2);
+				f.getAsJsonObject().remove("uri");
+				f.getAsJsonObject().addProperty("uri", distribute_url + key);
+			}
+		});
+		// Adding granuleID into product object
+		String granuleId = granule.get("granuleId").getAsString();
+		inputKey.get("product").getAsJsonObject().remove("name");
+		inputKey.get("product").getAsJsonObject().addProperty("name", granuleId);
 
 		JsonObject response = getResponseObject(exception);
 		inputKey.add("response", response);
@@ -122,6 +137,18 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 
 		inputKey.addProperty("processCompleteTime", nowAsISO);
 		return new Gson().toJson(inputKey);
+	}
+
+	/**
+	 * Parses S3 bucket and key based on regex.
+	 *
+	 * @param s3Path path to archived location of file
+	 * @return Matcher object where group(1) is the bucket and group(2) is the key
+	 */
+	public static Matcher getSourceBucketAndKey(String s3Path) {
+		Pattern p = Pattern.compile("s3://([^/]*)/(.*)");
+		Matcher m = p.matcher(s3Path);
+		return m;
 	}
 
     public String getError(JsonObject input, String key){
@@ -143,7 +170,7 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 	// WorkflowException
 	// region
 	public String PerformFunction(String input, Context context) throws Exception {
-		AdapterLogger.LogDebug(this.className + " Entered PerformFunction");
+		AdapterLogger.LogDebug(this.className + " Entered PerformFunction with input String: " + input);
 		JsonElement jelement = new JsonParser().parse(input);
 		JsonObject inputKey = jelement.getAsJsonObject();
 
@@ -154,7 +181,7 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 
 		JsonObject granule = inputKey.get("input").getAsJsonObject().get("granules").getAsJsonArray().get(0).getAsJsonObject();
 
-		String output = CNMResponse.generateOutput(cnm,exception, granule);
+		String output = CNMResponse.generateOutput(cnm,exception, granule, inputConfig);
 		String method = inputConfig.get("type").getAsString();
 		String region = inputConfig.get("region").getAsString();
 		AdapterLogger.LogInfo(this.className + " region:" + region + " method:" + method);

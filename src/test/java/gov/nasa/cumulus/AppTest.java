@@ -45,31 +45,6 @@ public class AppTest
         return new TestSuite( AppTest.class );
     }
 
-    /**
-     * Rigourous Test :-)
-     */
-    public void testApp()
-    {
-
-
-    	String cnm = "{"
-    	+ "  \"version\": \"v1.0\","
-    	+ "  \"provider\": \"PODAAC_SWOT\","
-    	+ "  \"collection\": \"SWOT_Prod_l2:1\","
-    	+ "  \"deliveryTime\":\"2017-09-30T03:42:29.791198\","
-    	+ "  \"identifier\": \"1234-abcd-efg0-9876\","
-    	+ "  \"product\": {"
-    	+ "    \"files\": ["
-    	+ "      { \"size\":53205914864} ]"
-
-    	+ "  }"
-    	+ "}";
-
-    	String output = CNMResponse.generateOutput(cnm, "", null);
-    	System.out.println(output);
-        assertNotNull(output);
-    }
-
     public void testError() throws IOException{
 
       StringBuilder sb = new StringBuilder();
@@ -95,7 +70,7 @@ public class AppTest
       assertNotNull(ex);
       // Further testing with generateOutput
       JsonObject granule = inputKey.get("input").getAsJsonObject().get("granules").getAsJsonArray().get(0).getAsJsonObject();
-      String output = CNMResponse.generateOutput(new Gson().toJson(inputConfig.get("OriginalCNM")), ex, null);
+      String output = CNMResponse.generateOutput(new Gson().toJson(inputConfig.get("OriginalCNM")), ex, granule, inputConfig);
 		JsonElement outputElement = new JsonParser().parse(output);
 		JsonObject response = outputElement.getAsJsonObject().get("response").getAsJsonObject();
 		JsonObject product = outputElement.getAsJsonObject().get("product").getAsJsonObject();
@@ -103,7 +78,7 @@ public class AppTest
 		assertEquals("FAILURE", response.get("status").getAsString());
 		assertEquals("1.0", product.get("dataVersion").getAsString());
 		assertEquals(1, product.get("files").getAsJsonArray().size());
-		assertEquals("L1B_HR_SLC/L1B_HR_SLC_product_0001-of-4154.h5", product.get("name").getAsString());
+		assertEquals("L1B_HR_SLC_product_0001-of-4154", product.get("name").getAsString());
 
     }
     
@@ -220,14 +195,15 @@ public class AppTest
 
 		JsonObject granule = inputKey.get("input").getAsJsonObject().get("granules").getAsJsonArray().get(0).getAsJsonObject();
 
-		String output = CNMResponse.generateOutput(cnm, null, granule);
+		String output = CNMResponse.generateOutput(cnm, null, granule, inputConfig);
 		JsonElement outputElement = new JsonParser().parse(output);
 		JsonObject response = outputElement.getAsJsonObject().get("response").getAsJsonObject();
 		JsonObject product = outputElement.getAsJsonObject().get("product").getAsJsonObject();
 		assertEquals("SUCCESS", response.get("status").getAsString());
 		assertEquals("1.0", product.get("dataVersion").getAsString());
 		assertEquals(2, product.get("files").getAsJsonArray().size());
-		assertEquals("Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc", product.get("name").getAsString());
+		// product.name should be the granuleId
+		assertEquals("Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2", product.get("name").getAsString());
 
 		JsonObject ingestionMetadata = response.get("ingestionMetadata").getAsJsonObject();
 		assertNotNull(ingestionMetadata);
