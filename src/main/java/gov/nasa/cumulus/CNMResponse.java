@@ -104,17 +104,36 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 		JsonObject inputKey = jelement.getAsJsonObject();
 		String distribute_url = inputConfig.getAsJsonPrimitive("distribution_endpoint").getAsString();
 
-		// inputKey.remove("product");
-		JsonArray files = inputKey.getAsJsonObject("product").getAsJsonArray("files");
-		files.forEach( (JsonElement f) -> {
-			Matcher m = getSourceBucketAndKey(f.getAsJsonObject().getAsJsonPrimitive("uri").getAsString());
+		JsonArray granuleFiles = granule.getAsJsonArray("files");
+		// build product.files off input granule's files
+		JsonArray productFiles =  new JsonArray();
+		granuleFiles.forEach((JsonElement e) -> {
+			JsonObject f = new JsonObject();
+			//type
+			f.addProperty("type", e.getAsJsonObject().getAsJsonPrimitive("type").getAsString());
+			// subtype : skip
+			// name
+			f.addProperty("name", e.getAsJsonObject().getAsJsonPrimitive("name").getAsString());
+			// uri
+			String filename = e.getAsJsonObject().getAsJsonPrimitive("filename").getAsString();
+			Matcher m = getSourceBucketAndKey(filename);
 			if (m.find()) {
 				String sourceBucket = m.group(1);
 				String key = m.group(2);
-				f.getAsJsonObject().remove("uri");
-				f.getAsJsonObject().addProperty("uri", distribute_url + key);
+				f.addProperty("uri",distribute_url + key);
 			}
+			// checksumType
+			if(e.getAsJsonObject().getAsJsonPrimitive("checksumType") != null)
+				f.addProperty("checksumType", e.getAsJsonObject().getAsJsonPrimitive("checksumType").getAsString());
+			if(e.getAsJsonObject().getAsJsonPrimitive("checksum") != null)
+				f.addProperty("checksum", e.getAsJsonObject().getAsJsonPrimitive("checksum").getAsString());
+			f.addProperty("size", e.getAsJsonObject().getAsJsonPrimitive("size").getAsLong());
+			productFiles.add(f);
 		});
+
+		// Adding newly created files to product
+		inputKey.get("product").getAsJsonObject().remove("files");
+		inputKey.get("product").getAsJsonObject().add("files", productFiles);
 		// Adding granuleID into product object
 		String granuleId = granule.get("granuleId").getAsString();
 		inputKey.get("product").getAsJsonObject().remove("name");

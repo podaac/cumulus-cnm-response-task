@@ -7,10 +7,12 @@
                     {
                         "name": "L1B_HR_SLC_product_0001-of-4154.h5",
                         "bucket": "podaac-dev-cumulus-test-input",
-                        "fileSize": 3769638960,
+                        "checksumType": "md5",
+                        "checksum": "1mm36de83e32233s332f771dc",
                         "path": "L1B_HR_SLC",
-                        "url_path": "s3://podaac-dev-cumulus-test-input/L1B_HR_SLC/L1B_HR_SLC_product_0001-of-4154.h5",
-                        "size": 3769638960
+                        "filename": "s3://podaac-dev-cumulus-test-input/L1B_HR_SLC/L1B_HR_SLC_product_0001-of-4154.h5",
+                        "size": 3769638960,
+                        "type": "data"
                     }
                 ]
             }
