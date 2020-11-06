@@ -58,11 +58,11 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 	public static JsonObject getResponseObject(String exception) {
 		JsonObject response = new JsonObject();
 
-		if(exception == null || new String("").equals(exception) ||  new String("None").equals(exception) ||  new String("\"None\"").equals(exception)){
-			//success
+        if (exception == null || exception.isEmpty() || exception.equals("None") || exception.equals("\"None\"")) {
+            //success
 			AdapterLogger.LogInfo(CNMResponse.class.getName() + " status: SUCCESS");
 			response.addProperty("status", "SUCCESS");
-		}else{
+		} else {
 			//fail
 			AdapterLogger.LogWarning(CNMResponse.class.getName() + " status: FAILURE");
 			response.addProperty("status", "FAILURE");
