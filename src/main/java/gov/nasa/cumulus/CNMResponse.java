@@ -3,13 +3,12 @@ package gov.nasa.cumulus;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -25,6 +24,9 @@ import cumulus_message_adapter.message_parser.ITask;
 import cumulus_message_adapter.message_parser.MessageAdapterException;
 import cumulus_message_adapter.message_parser.MessageParser;
 import cumulus_message_adapter.message_parser.AdapterLogger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.client.utils.URIUtils;
 
 
 public class CNMResponse implements  ITask, RequestHandler<String, String>{
@@ -101,56 +103,63 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 		return response;
 	}
 
-	public static String generateOutput(String inputCnm, String exception, JsonObject granule, JsonObject  inputConfig){
+	public static String generateOutput(String inputCnm, String exception, JsonObject granule, JsonObject  inputConfig)
+	throws Exception {
 		//convert CNM to GranuleObject
+		JsonObject response = getResponseObject(exception);
 		JsonElement jelement = new JsonParser().parse(inputCnm);
 		JsonObject inputKey = jelement.getAsJsonObject();
-		String distribute_url = inputConfig.getAsJsonPrimitive("distribution_endpoint").getAsString();
+		// Only add product.name, product.files under inputKey when SUCCESS
+		if(granule !=null && StringUtils.equals(response.get("status").getAsString(), "SUCCESS")) {
+			String distribute_url = inputConfig.getAsJsonPrimitive("distribution_endpoint").getAsString();
 
-		JsonArray granuleFiles = granule.getAsJsonArray("files");
-		// build product.files off input granule's files
-		JsonArray productFiles =  new JsonArray();
-		granuleFiles.forEach((JsonElement e) -> {
-			JsonObject f = new JsonObject();
-			//type
-			f.addProperty("type", e.getAsJsonObject().getAsJsonPrimitive("type").getAsString());
-			// subtype : skip
-			// name
-			f.addProperty("name", e.getAsJsonObject().getAsJsonPrimitive("name").getAsString());
-			// uri
-			String filename = e.getAsJsonObject().getAsJsonPrimitive("filename").getAsString();
-			Matcher m = getSourceBucketAndKey(filename);
-			if (m.find()) {
-				String sourceBucket = m.group(1);
-				String key = m.group(2);
-				f.addProperty("uri",distribute_url + key);
+			JsonArray granuleFiles = granule.getAsJsonArray("files");
+			// build product.files off input granule's files
+			JsonArray productFiles = new JsonArray();
+			for (int i = 0; i < granuleFiles.size(); i++) {
+				JsonElement e = granuleFiles.get(i);
+				JsonObject f = new JsonObject();
+				//type
+				f.addProperty("type", e.getAsJsonObject().getAsJsonPrimitive("type").getAsString());
+				// subtype : skip
+				// name
+				f.addProperty("name", e.getAsJsonObject().getAsJsonPrimitive("name").getAsString());
+				// uri
+				String filename = e.getAsJsonObject().getAsJsonPrimitive("filename").getAsString();
+				filename = filename.replace("s3://", "/");
+				try {
+					URIBuilder uriBuilder = new URIBuilder(distribute_url);
+					f.addProperty("uri", uriBuilder.setPath(uriBuilder.getPath() + filename).build().normalize().toString());
+				} catch (URISyntaxException uriSyntaxException) {
+					throw uriSyntaxException;
+				}
+				// checksumType
+				if (e.getAsJsonObject().getAsJsonPrimitive("checksumType") != null)
+					f.addProperty("checksumType", e.getAsJsonObject().getAsJsonPrimitive("checksumType").getAsString());
+				if (e.getAsJsonObject().getAsJsonPrimitive("checksum") != null)
+					f.addProperty("checksum", e.getAsJsonObject().getAsJsonPrimitive("checksum").getAsString());
+				f.addProperty("size", e.getAsJsonObject().getAsJsonPrimitive("size").getAsLong());
+				productFiles.add(f);
 			}
-			// checksumType
-			if(e.getAsJsonObject().getAsJsonPrimitive("checksumType") != null)
-				f.addProperty("checksumType", e.getAsJsonObject().getAsJsonPrimitive("checksumType").getAsString());
-			if(e.getAsJsonObject().getAsJsonPrimitive("checksum") != null)
-				f.addProperty("checksum", e.getAsJsonObject().getAsJsonPrimitive("checksum").getAsString());
-			f.addProperty("size", e.getAsJsonObject().getAsJsonPrimitive("size").getAsLong());
-			productFiles.add(f);
-		});
 
-		// Adding newly created files to product
-		inputKey.get("product").getAsJsonObject().remove("files");
-		inputKey.get("product").getAsJsonObject().add("files", productFiles);
-		// Adding granuleID into product object
-		String granuleId = granule.get("granuleId").getAsString();
-		inputKey.get("product").getAsJsonObject().remove("name");
-		inputKey.get("product").getAsJsonObject().addProperty("name", granuleId);
+			// Adding newly created files to product
+			inputKey.get("product").getAsJsonObject().remove("files");
+			inputKey.get("product").getAsJsonObject().add("files", productFiles);
+			// Adding granuleID into product object
+			String granuleId = granule.get("granuleId").getAsString();
+			inputKey.get("product").getAsJsonObject().remove("name");
+			inputKey.get("product").getAsJsonObject().addProperty("name", granuleId);
 
-		JsonObject response = getResponseObject(exception);
-		inputKey.add("response", response);
-
-		if (granule != null && response.get("status").getAsString().equals("SUCCESS")) {
 			JsonObject ingestionMetadata = new JsonObject();
 			ingestionMetadata.addProperty("catalogId", granule.get("cmrConceptId").getAsString());
 			ingestionMetadata.addProperty("catalogUrl", granule.get("cmrLink").getAsString());
 			response.add("ingestionMetadata", ingestionMetadata);
+		} else {
+			inputKey.remove("product");
 		}
+		// no matter SUCCESS or FAILURE, added response under inputKey
+		// but the FAILURE case, response does not include cmr data
+		inputKey.add("response", response);
 
 		TimeZone tz = TimeZone.getTimeZone("UTC");
 		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -159,18 +168,6 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 
 		inputKey.addProperty("processCompleteTime", nowAsISO);
 		return new Gson().toJson(inputKey);
-	}
-
-	/**
-	 * Parses S3 bucket and key based on regex.
-	 *
-	 * @param s3Path path to archived location of file
-	 * @return Matcher object where group(1) is the bucket and group(2) is the key
-	 */
-	public static Matcher getSourceBucketAndKey(String s3Path) {
-		Pattern p = Pattern.compile("s3://([^/]*)/(.*)");
-		Matcher m = p.matcher(s3Path);
-		return m;
 	}
 
     public String getError(JsonObject input, String key){
@@ -195,7 +192,6 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 		AdapterLogger.LogDebug(this.className + " Entered PerformFunction with input String: " + input);
 		JsonElement jelement = new JsonParser().parse(input);
 		JsonObject inputKey = jelement.getAsJsonObject();
-
 
 		JsonObject  inputConfig = inputKey.getAsJsonObject("config");
 		String cnm = new Gson().toJson(inputConfig.get("OriginalCNM"));
