@@ -1,25 +1,23 @@
 package gov.nasa.cumulus;
 
+import com.amazonaws.services.sns.model.NotFoundException;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import com.amazonaws.services.sns.AmazonSNS;
-import com.amazonaws.services.sns.AmazonSNSClientBuilder;
-import com.amazonaws.services.sns.model.CreateTopicRequest;
-import com.amazonaws.services.sns.model.CreateTopicResult;
-import com.amazonaws.services.sns.model.DeleteTopicRequest;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 
 import java.nio.file.Files;
 import java.util.Scanner;
 import java.util.UUID;
 import java.io.File;
 import java.io.IOException;
-
 
 /**
  * Unit test for simple App.
@@ -100,31 +98,37 @@ public class AppTest
      * this is not portable! relies on the default profile for AWS connectivity. 
      */
     public void testSNS(){
-    	
-    	try{
-			SenderFactory.getSender("us-west-2", "sns").sendMessage("testMessage", "badTopic");
-    		fail("Should have failed with invalid topic");
-    	}catch(Exception e){}
-    	
-    	AmazonSNS snsClient = AmazonSNSClientBuilder.standard().withRegion("us-west-2").build();
-    	
-    	final CreateTopicRequest createTopicRequest = new CreateTopicRequest("MyTopic-" + UUID.randomUUID().toString());
-    	final CreateTopicResult createTopicResponse = snsClient.createTopic(createTopicRequest);
+        // Test and make sure the factory returns the correct sender class
+        Sender sender = SenderFactory.getSender("us-west-2", "sns");
+        if(!(sender instanceof SNSSender)) {
+            fail("Sender class should be SNSSender");
+        }
+        // configure our mocks for aws
+        AmazonSNS snsClient = Mockito.mock(AmazonSNS.class);
+        // create our 'valid topic'
+        final String topicARN = "MyTopic-" + UUID.randomUUID().toString();
+        // Print the topic ARN.
+        System.out.println("TopicArn:" + topicARN);
 
-    	final String topicARN = createTopicResponse.getTopicArn();
-    	
-    	// Print the topic ARN.
-    	System.out.println("TopicArn:" + topicARN);
-    	
-    	try{
-			SenderFactory.getSender("us-west-2","sns").sendMessage("testMessage", topicARN);
-    	}catch(Exception e){
+        // configure our mocks for SNSSender now, using our spied aws
+        sender = new SNSSender("us-west-2", snsClient);
+        // configure our mock for aws
+        Mockito.doThrow(NotFoundException.class).when(snsClient).publish(
+                ArgumentMatchers.argThat(p -> !p.getTopicArn().equalsIgnoreCase(topicARN)));
+        // now test sending with a bad topic
+        try {
+			sender.sendMessage("testMessage", "badTopic");
+    		fail("Should have failed with invalid topic");
+    	} catch(Exception e) {
+        }
+    	// finally, test with our valid topic
+    	try {
+			sender.sendMessage("testMessage", topicARN);
+    	} catch(Exception e) {
     		e.printStackTrace();
     		fail("Should not have failed with valid topic");
     	}
-    	
-    	final DeleteTopicRequest deleteTopicRequest = new DeleteTopicRequest(topicARN);
-    	snsClient.deleteTopic(deleteTopicRequest);
+
     }
 
     public void testErrorCode() {
