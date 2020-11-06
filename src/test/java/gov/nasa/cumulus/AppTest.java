@@ -1,5 +1,6 @@
 package gov.nasa.cumulus;
 
+import com.google.gson.*;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -9,11 +10,9 @@ import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.amazonaws.services.sns.model.CreateTopicRequest;
 import com.amazonaws.services.sns.model.CreateTopicResult;
 import com.amazonaws.services.sns.model.DeleteTopicRequest;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import org.apache.http.client.utils.URIBuilder;
 
+import java.net.URI;
 import java.nio.file.Files;
 import java.util.Scanner;
 import java.util.UUID;
@@ -45,32 +44,7 @@ public class AppTest
         return new TestSuite( AppTest.class );
     }
 
-    /**
-     * Rigourous Test :-)
-     */
-    public void testApp()
-    {
-
-
-    	String cnm = "{"
-    	+ "  \"version\": \"v1.0\","
-    	+ "  \"provider\": \"PODAAC_SWOT\","
-    	+ "  \"collection\": \"SWOT_Prod_l2:1\","
-    	+ "  \"deliveryTime\":\"2017-09-30T03:42:29.791198\","
-    	+ "  \"identifier\": \"1234-abcd-efg0-9876\","
-    	+ "  \"product\": {"
-    	+ "    \"files\": ["
-    	+ "      { \"size\":53205914864} ]"
-
-    	+ "  }"
-    	+ "}";
-
-    	String output = CNMResponse.generateOutput(cnm, "", null);
-    	System.out.println(output);
-        assertNotNull(output);
-    }
-
-    public void testError() throws IOException{
+    public void testError() throws Exception{
 
       StringBuilder sb = new StringBuilder();
       Scanner scanner  = new Scanner(new File(getClass().getClassLoader().getResource("workflow.error.json").getFile()));
@@ -93,7 +67,15 @@ public class AppTest
       String ex = cnm.getError(inputConfig, "WorkflowException");
       System.out.println("Exception: " + ex);
       assertNotNull(ex);
-
+      // Further testing with generateOutput
+      JsonObject granule = inputKey.get("input").getAsJsonObject().get("granules").getAsJsonArray().get(0).getAsJsonObject();
+      String output = CNMResponse.generateOutput(new Gson().toJson(inputConfig.get("OriginalCNM")), ex, granule, inputConfig);
+		JsonElement outputElement = new JsonParser().parse(output);
+		JsonObject response = outputElement.getAsJsonObject().get("response").getAsJsonObject();
+		JsonElement product = outputElement.getAsJsonObject().get("product");
+		assertNotSame("SUCCESS", response.get("status").getAsString());
+		assertEquals("FAILURE", response.get("status").getAsString());
+		assertEquals(product, null);
     }
     
     /**
@@ -190,7 +172,7 @@ public class AppTest
 	/**
 	 * Test success CNM response
 	 */
-	public void testSuccessCnm() {
+	public void testSuccessCnm() throws Exception{
 		ClassLoader classLoader = getClass().getClassLoader();
 		File inputJsonFile = new File(classLoader.getResource("workflow.success.json").getFile());
 
@@ -209,14 +191,62 @@ public class AppTest
 
 		JsonObject granule = inputKey.get("input").getAsJsonObject().get("granules").getAsJsonArray().get(0).getAsJsonObject();
 
-		String output = CNMResponse.generateOutput(cnm, null, granule);
+		String output = CNMResponse.generateOutput(cnm, null, granule, inputConfig);
 		JsonElement outputElement = new JsonParser().parse(output);
 		JsonObject response = outputElement.getAsJsonObject().get("response").getAsJsonObject();
+		JsonObject product = outputElement.getAsJsonObject().get("product").getAsJsonObject();
 		assertEquals("SUCCESS", response.get("status").getAsString());
+
+
+		assertEquals("1.0", product.get("dataVersion").getAsString());
+		assertEquals(2, product.get("files").getAsJsonArray().size());
+		JsonArray files = product.get("files").getAsJsonArray();
+		assertEquals("1.0", product.get("dataVersion").getAsString());
+		assertEquals("Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2", product.get("name").getAsString());
+		assertEquals("https://te31m541y2.execute-api.us-west-2.amazonaws.com:9001/DEV/test-protected/Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc",
+				files.get(0).getAsJsonObject().getAsJsonPrimitive("uri").getAsString());
+		assertEquals("https://te31m541y2.execute-api.us-west-2.amazonaws.com:9001/DEV/test-public/Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.cmr.json",
+				files.get(1).getAsJsonObject().getAsJsonPrimitive("uri").getAsString());
+		// product.name should be the granuleId
+		assertEquals("Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2", product.get("name").getAsString());
 
 		JsonObject ingestionMetadata = response.get("ingestionMetadata").getAsJsonObject();
 		assertNotNull(ingestionMetadata);
 		assertEquals("G1234313662-POCUMULUS", ingestionMetadata.get("catalogId").getAsString());
 		assertEquals("https://cmr.uat.earthdata.nasa.gov/search/granules.json?concept_id=G1234313662-POCUMULUS", ingestionMetadata.get("catalogUrl").getAsString());
+	}
+
+	/**
+	 * This unit test case to prove Apache URIBuilder is slash "/" safe when concatenate URI
+	 * @throws Exception
+	 */
+	public void testApacheURIbuilder() throws  Exception{
+		String uriString = null;
+		URIBuilder uriBuilder = null;
+		URI uri = null;
+		// distribution_endpoint does not end with slash and key starts with slash
+		uriBuilder = new URIBuilder("http://distribution-uri:9000/DEV");
+		uri = uriBuilder.setPath(uriBuilder.getPath() + "/protected-bucket/granule_id.nc")
+				.build()
+				.normalize();
+		uriString = uri.toString();
+		assertEquals(uriString,"http://distribution-uri:9000/DEV/protected-bucket/granule_id.nc");
+
+		// distribution_endpoint does end with slash and key starts with slash (double slash case)
+		uriBuilder = new URIBuilder("http://distribution-uri:9000/DEV/");
+		uri = uriBuilder.setPath(uriBuilder.getPath() + "/protected-bucket/granule_id.nc")
+				.build()
+				.normalize();
+		uriString = uri.toString();
+		assertEquals(uriString,"http://distribution-uri:9000/DEV/protected-bucket/granule_id.nc");
+
+		// distribution_endpoint does not end with slash and key does not start with double slash (double slash case)
+		uriBuilder = new URIBuilder("http://distribution-uri:9000/DEV");
+		uri = uriBuilder.setPath(uriBuilder.getPath() + "//protected-bucket/granule_id.nc")
+				.build()
+				.normalize();
+		uriString = uri.toString();
+		assertEquals(uriString,"http://distribution-uri:9000/DEV/protected-bucket/granule_id.nc");
+
 	}
 }

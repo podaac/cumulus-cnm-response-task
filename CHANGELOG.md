@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **PODAAC-2541**
   - fix high severity findings reported in Snyk.
+- **PODAAC-2546**
+  - CNM schema change which requires CNM-R to include product object.
   
 - **PODAAC-2551**
   - a build script under /builder directory, and a jenkins job to build and push release to public github.

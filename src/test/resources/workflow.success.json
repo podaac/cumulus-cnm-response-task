@@ -7,6 +7,7 @@
                         "checksumType": "md5",
                         "name": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc",
                         "filepath": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc",
+                        "checksumType": "md5",
                         "checksum": "3b6de83e361a01867a9e541a4bf771dc",
                         "bucket": "test-protected",
                         "filename": "s3://test-protected/Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc",
@@ -19,11 +20,13 @@
                     {
                         "name": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.cmr.json",
                         "filepath": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.cmr.json",
+                        "checksumType": "md5",
+                        "checksum": "11236de83e361eesss332f771dc",
                         "bucket": "test-public",
                         "filename": "s3://test-public/Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.cmr.json",
-                        "fileSize": 1236,
                         "url_path": "",
-                        "type": "metadata"
+                        "type": "metadata",
+                        "size": 1236
                     }
                 ],
                 "cmrLink": "https://cmr.uat.earthdata.nasa.gov/search/granules.json?concept_id=G1234313662-POCUMULUS",
@@ -52,6 +55,7 @@
     },
     "config": {
         "response-endpoint": "arn:aws:sns:us-west-2:111111111111:test-provider-response-sns",
+        "distribution_endpoint": "https://te31m541y2.execute-api.us-west-2.amazonaws.com:9001/DEV/",
         "OriginalCNM": {
             "product": {
                 "files": [
@@ -72,7 +76,8 @@
                         "size": 83
                     }
                 ],
-                "name": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc"
+                "name": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc",
+                "dataVersion": "1.0"
             },
             "receivedTime": "2020-04-08T16:00:16.958Z",
             "collection": "MERGED_TP_J1_OSTM_OST_CYCLES_V42",
