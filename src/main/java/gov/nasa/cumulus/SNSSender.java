@@ -14,8 +14,12 @@ public class SNSSender extends Sender {
     private AmazonSNS snsClient;
 
     public SNSSender(String region) {
+        this(region, AmazonSNSClientBuilder.standard().withRegion(region).build());
+    }
+
+    public SNSSender(String region, AmazonSNS snsClient) {
         super(region);
-        this.snsClient = AmazonSNSClientBuilder.standard().withRegion(region).build();
+        this.snsClient = snsClient;
     }
 
     /**
