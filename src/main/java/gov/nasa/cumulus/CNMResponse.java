@@ -26,7 +26,6 @@ import cumulus_message_adapter.message_parser.MessageParser;
 import cumulus_message_adapter.message_parser.AdapterLogger;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.client.utils.URIUtils;
 
 
 public class CNMResponse implements  ITask, RequestHandler<String, String>{

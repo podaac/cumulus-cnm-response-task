@@ -196,10 +196,13 @@ public class AppTest
 		JsonObject response = outputElement.getAsJsonObject().get("response").getAsJsonObject();
 		JsonObject product = outputElement.getAsJsonObject().get("product").getAsJsonObject();
 		assertEquals("SUCCESS", response.get("status").getAsString());
+
+
 		assertEquals("1.0", product.get("dataVersion").getAsString());
 		assertEquals(2, product.get("files").getAsJsonArray().size());
 		JsonArray files = product.get("files").getAsJsonArray();
-
+		assertEquals("1.0", product.get("dataVersion").getAsString());
+		assertEquals("Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2", product.get("name").getAsString());
 		assertEquals("https://te31m541y2.execute-api.us-west-2.amazonaws.com:9001/DEV/test-protected/Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc",
 				files.get(0).getAsJsonObject().getAsJsonPrimitive("uri").getAsString());
 		assertEquals("https://te31m541y2.execute-api.us-west-2.amazonaws.com:9001/DEV/test-public/Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.cmr.json",
