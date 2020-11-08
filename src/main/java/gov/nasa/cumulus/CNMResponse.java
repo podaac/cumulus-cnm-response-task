@@ -3,25 +3,29 @@ package gov.nasa.cumulus;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+import com.google.gson.Gson;
 import org.apache.commons.io.IOUtils;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import cumulus_message_adapter.message_parser.ITask;
 import cumulus_message_adapter.message_parser.MessageAdapterException;
 import cumulus_message_adapter.message_parser.MessageParser;
 import cumulus_message_adapter.message_parser.AdapterLogger;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.utils.URIBuilder;
 
 
 public class CNMResponse implements  ITask, RequestHandler<String, String>{
@@ -98,27 +102,66 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 		return response;
 	}
 
-	public static String generateOutput(String inputCnm, String exception, JsonObject granule){
+	public static String generateOutput(String inputCnm, String exception, JsonObject granule, JsonObject  inputConfig)
+	throws Exception {
 		//convert CNM to GranuleObject
+		JsonObject response = getResponseObject(exception);
 		JsonElement jelement = new JsonParser().parse(inputCnm);
 		JsonObject inputKey = jelement.getAsJsonObject();
+		// Only add product.name, product.files under inputKey when SUCCESS
+		if(granule !=null && StringUtils.equals(response.get("status").getAsString(), "SUCCESS")) {
+			String distribute_url = inputConfig.getAsJsonPrimitive("distribution_endpoint").getAsString();
 
-		JsonElement sizeElement = inputKey.get("product").getAsJsonObject().get("files").getAsJsonArray().get(0).getAsJsonObject().get("size");
+			JsonArray granuleFiles = granule.getAsJsonArray("files");
+			// build product.files off input granule's files
+			JsonArray productFiles = new JsonArray();
+			for (int i = 0; i < granuleFiles.size(); i++) {
+				JsonElement e = granuleFiles.get(i);
+				JsonObject f = new JsonObject();
+				//type
+				f.addProperty("type", e.getAsJsonObject().getAsJsonPrimitive("type").getAsString());
+				// subtype : skip
+				// name
+				f.addProperty("name", e.getAsJsonObject().getAsJsonPrimitive("name").getAsString());
+				// uri
+				String filename = e.getAsJsonObject().getAsJsonPrimitive("filename").getAsString();
+				filename = filename.replace("s3://", "/");
+				try {
+					URIBuilder uriBuilder = new URIBuilder(distribute_url);
+					f.addProperty("uri", uriBuilder.setPath(uriBuilder.getPath() + filename).build().normalize().toString());
+				} catch (URISyntaxException uriSyntaxException) {
+					throw uriSyntaxException;
+				}
+				// checksumType
+				if (e.getAsJsonObject().getAsJsonPrimitive("checksumType") != null)
+					f.addProperty("checksumType", e.getAsJsonObject().getAsJsonPrimitive("checksumType").getAsString());
+				if (e.getAsJsonObject().getAsJsonPrimitive("checksum") != null)
+					f.addProperty("checksum", e.getAsJsonObject().getAsJsonPrimitive("checksum").getAsString());
+				f.addProperty("size", e.getAsJsonObject().getAsJsonPrimitive("size").getAsLong());
+				productFiles.add(f);
+			}
 
-		inputKey.remove("product");
+			// Adding newly created files to product
+			inputKey.get("product").getAsJsonObject().remove("files");
+			inputKey.get("product").getAsJsonObject().add("files", productFiles);
+			// Adding granuleID into product object
+			String granuleId = granule.get("granuleId").getAsString();
+			inputKey.get("product").getAsJsonObject().remove("name");
+			inputKey.get("product").getAsJsonObject().addProperty("name", granuleId);
 
-		JsonObject response = getResponseObject(exception);
-		inputKey.add("response", response);
-
-		if (granule != null && response.get("status").getAsString().equals("SUCCESS")) {
 			JsonObject ingestionMetadata = new JsonObject();
 			ingestionMetadata.addProperty("catalogId", granule.get("cmrConceptId").getAsString());
 			ingestionMetadata.addProperty("catalogUrl", granule.get("cmrLink").getAsString());
 			response.add("ingestionMetadata", ingestionMetadata);
+		} else {
+			inputKey.remove("product");
 		}
+		// no matter SUCCESS or FAILURE, added response under inputKey
+		// but the FAILURE case, response does not include cmr data
+		inputKey.add("response", response);
 
 		TimeZone tz = TimeZone.getTimeZone("UTC");
-		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 		df.setTimeZone(tz);
 		String nowAsISO = df.format(new Date());
 
@@ -145,10 +188,9 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 	// WorkflowException
 	// region
 	public String PerformFunction(String input, Context context) throws Exception {
-		AdapterLogger.LogDebug(this.className + " Entered PerformFunction");
+		AdapterLogger.LogDebug(this.className + " Entered PerformFunction with input String: " + input);
 		JsonElement jelement = new JsonParser().parse(input);
 		JsonObject inputKey = jelement.getAsJsonObject();
-
 
 		JsonObject  inputConfig = inputKey.getAsJsonObject("config");
 		String cnm = new Gson().toJson(inputConfig.get("OriginalCNM"));
@@ -156,7 +198,7 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 
 		JsonObject granule = inputKey.get("input").getAsJsonObject().get("granules").getAsJsonArray().get(0).getAsJsonObject();
 
-		String output = CNMResponse.generateOutput(cnm,exception, granule);
+		String output = CNMResponse.generateOutput(cnm,exception, granule, inputConfig);
 		String method = inputConfig.get("type").getAsString();
 		String region = inputConfig.get("region").getAsString();
 		AdapterLogger.LogInfo(this.className + " region:" + region + " method:" + method);
