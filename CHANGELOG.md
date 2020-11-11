@@ -14,7 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - CNM schema change which requires CNM-R to include product object.
 - **PODAAC-2551**
   - a build script under /builder directory, and a jenkins job to build and push release to public github.
-  
+- **PODAAC-2552**
+  - catch (reasonable) exceptions, and ensure we send an SNS failure message, before re-throwing the exception.
+    
 ### Changed
 - **PODAAC-2641**
   - Added UTC timezone to processCompleteTime.
