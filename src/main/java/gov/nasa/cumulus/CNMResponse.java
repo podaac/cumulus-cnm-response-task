@@ -68,9 +68,20 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 			response.addProperty("status", "FAILURE");
 
 			//logic for failure types here
-			JsonObject workflowException = new JsonParser().parse(exception).getAsJsonObject();
+            String error;
+            String causeString;
+            JsonObject workflowException;
 
-			String error = workflowException.get("Error").getAsString();
+            // PODAAC-2552 - handle general exceptions being thrown
+            if (exception.equalsIgnoreCase("CNMResponse Exception")) {
+                error = exception;
+                causeString = "Unknown cause, CNMResponse likely threw an exception";
+            } else {
+                workflowException = new JsonParser().parse(exception).getAsJsonObject();
+                error = workflowException.get("Error").getAsString();
+                causeString = workflowException.get("Cause").getAsString();
+            }
+
 			AdapterLogger.LogWarning(CNMResponse.class.getName() + " error:" + error);
 			switch(error) {
 				case "FileNotFound":
@@ -86,7 +97,6 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 					response.addProperty("errorCode", ErrorCode.PROCESSING_ERROR.toString());
 			}
 
-			String causeString = workflowException.get("Cause").getAsString();
 			AdapterLogger.LogWarning(CNMResponse.class.getName() + " causeString:" + causeString);
 			try {
 				JsonObject cause = new JsonParser().parse(causeString).getAsJsonObject();
@@ -182,6 +192,32 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 		return exception;
 	}
 
+	public static String generateGeneralError(String cnm) {
+        JsonElement jelement = new JsonParser().parse(cnm);
+        JsonObject inputKey = jelement.getAsJsonObject();
+        JsonObject response = getResponseObject("CNMResponse Exception");
+        // remove the product information
+        inputKey.remove("product");
+        inputKey.add("response", response);
+        // add the completion timestamp
+        TimeZone tz = TimeZone.getTimeZone("UTC");
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        df.setTimeZone(tz);
+        String nowAsISO = df.format(new Date());
+        inputKey.addProperty("processCompleteTime", nowAsISO);
+        return new Gson().toJson(inputKey);
+    }
+
+    public static void sendSNS(String output, String method, String region, JsonElement endPoint) {
+        if (method != null) {
+            if (endPoint.isJsonArray()) {
+                SenderFactory.getSender(region, method).sendMessage(output, endPoint.getAsJsonArray());
+            } else {
+                SenderFactory.getSender(region, method).sendMessage(output, endPoint.getAsString());
+            }
+        }
+    }
+
 	//inputs
 	// OriginalCNM
 	// CNMResponseStream
@@ -196,20 +232,21 @@ public class CNMResponse implements  ITask, RequestHandler<String, String>{
 		String cnm = new Gson().toJson(inputConfig.get("OriginalCNM"));
 		String exception = getError(inputConfig, "WorkflowException");
 
-		JsonObject granule = inputKey.get("input").getAsJsonObject().get("granules").getAsJsonArray().get(0).getAsJsonObject();
-
-		String output = CNMResponse.generateOutput(cnm,exception, granule, inputConfig);
-		String method = inputConfig.get("type").getAsString();
-		String region = inputConfig.get("region").getAsString();
-		AdapterLogger.LogInfo(this.className + " region:" + region + " method:" + method);
-		JsonElement responseEndpoint = inputConfig.get("response-endpoint");
-		if (method != null) {
-			if (responseEndpoint.isJsonArray()) {
-				SenderFactory.getSender(region, method).sendMessage(output, responseEndpoint.getAsJsonArray());
-			} else {
-				SenderFactory.getSender(region, method).sendMessage(output, responseEndpoint.getAsString());
-			}
-		}
+		// PODAAC-2552 - catch general exceptions, send SNS failure, then re-throw the exception
+        String method = inputConfig.get("type").getAsString();
+        String region = inputConfig.get("region").getAsString();
+        AdapterLogger.LogInfo(this.className + " region:" + region + " method:" + method);
+        JsonElement responseEndpoint = inputConfig.get("response-endpoint");
+		String output;
+		try {
+            JsonObject granule = inputKey.get("input").getAsJsonObject().get("granules").getAsJsonArray().get(0).getAsJsonObject();
+            output = CNMResponse.generateOutput(cnm, exception, granule, inputConfig);
+            sendSNS(output, method, region, responseEndpoint);
+        } catch (Exception ex1){
+		    output = CNMResponse.generateGeneralError(cnm);
+            sendSNS(output, method, region, responseEndpoint);
+            throw ex1;
+        }
 
 		/* create new object:
 		 *

@@ -102,12 +102,12 @@ public class AppTest
         try {
             sender.sendMessage("testMessage", "badTopic");
     		fail("Should have failed with invalid topic");
-    	}catch(Exception e){}
+    	} catch (Exception e) {}
 
         // finally, test with our valid topic
         try {
             sender.sendMessage("testMessage", topicARN);
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             fail("Should not have failed with valid topic");
         }
@@ -172,6 +172,36 @@ public class AppTest
 		assertEquals(CNMResponse.ErrorCode.VALIDATION_ERROR.toString(), responseUnexpectedFileSize.get("errorCode").getAsString());
 		assertEquals("Placeholder for UnexpectedFileSize message", responseUnexpectedFileSize.get("errorMessage").getAsString());
 	}
+
+    public void testGeneralFailureMessage() throws Exception {
+
+        StringBuilder sb = new StringBuilder();
+        Scanner scanner  =
+                new Scanner(new File(getClass().getClassLoader().getResource("workflow.success.json").getFile()));
+        //String text = new Scanner(ClassLoader.getSystemResource("workflow.error.json")).useDelimiter("\\A").next();
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            sb.append(line).append("\n");
+        }
+
+        scanner.close();
+        String text = sb.toString();
+        System.out.println("Processing " + text);
+
+        JsonElement jelement = new JsonParser().parse(text);
+        JsonObject inputKey = jelement.getAsJsonObject();
+
+        JsonObject  inputConfig = inputKey.getAsJsonObject("config");
+
+        CNMResponse cnm = new CNMResponse();
+        String output = CNMResponse.generateGeneralError(new Gson().toJson(inputConfig.get("OriginalCNM")));
+        JsonElement outputElement = new JsonParser().parse(output);
+        JsonObject response = outputElement.getAsJsonObject().get("response").getAsJsonObject();
+        JsonElement product = outputElement.getAsJsonObject().get("product");
+        assertNotSame("SUCCESS", response.get("status").getAsString());
+        assertEquals("FAILURE", response.get("status").getAsString());
+        assertEquals(product, null);
+    }
 
 	/**
 	 * Test success CNM response
