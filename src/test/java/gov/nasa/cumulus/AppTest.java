@@ -1,7 +1,9 @@
 package gov.nasa.cumulus;
 
+import com.amazonaws.services.sns.model.MessageAttributeValue;
 import com.amazonaws.services.sns.model.NotFoundException;
 import com.google.gson.*;
+import gov.nasa.cumulus.cnmresponse.bo.MessageAttributeBO;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -13,6 +15,7 @@ import org.mockito.Mockito;
 
 import java.net.URI;
 import java.nio.file.Files;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.UUID;
 import java.io.File;
@@ -218,6 +221,17 @@ public class AppTest
 		assertNotNull(ingestionMetadata);
 		assertEquals("G1234313662-POCUMULUS", ingestionMetadata.get("catalogId").getAsString());
 		assertEquals("https://cmr.uat.earthdata.nasa.gov/search/granules.json?concept_id=G1234313662-POCUMULUS", ingestionMetadata.get("catalogUrl").getAsString());
+	}
+
+	public void testBuildMessageAttributesHash() {
+		CNMResponse cnmResponse = new CNMResponse();
+		Map<String, MessageAttributeBO> attributeBOMap =  cnmResponse.buildMessageAttributesHash("JASON_C1", "SUCCESS");
+		MessageAttributeBO collectionBO = attributeBOMap.get("COLLECTION_SHORT_NAME");
+		MessageAttributeBO statusBO = attributeBOMap.get("CNM_RESPONSE_STATUS");
+		assertEquals(collectionBO.getType(), "String");
+		assertEquals(collectionBO.getValue(), "JASON_C1");
+		assertEquals(statusBO.getType(), "String");
+		assertEquals(statusBO.getValue(), "SUCCESS");
 	}
 
 	/**
