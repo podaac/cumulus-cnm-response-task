@@ -227,10 +227,10 @@ public class AppTest
 		Map<String, MessageAttributeBO> attributeBOMap =  cnmResponse.buildMessageAttributesHash("JASON_C1", "SUCCESS");
 		MessageAttributeBO collectionBO = attributeBOMap.get("COLLECTION_SHORT_NAME");
 		MessageAttributeBO statusBO = attributeBOMap.get("CNM_RESPONSE_STATUS");
-		assertEquals(collectionBO.getType(), "String");
-		assertEquals(collectionBO.getValue(), "JASON_C1");
-		assertEquals(statusBO.getType(), "String");
-		assertEquals(statusBO.getValue(), "SUCCESS");
+		assertEquals("String", collectionBO.getType());
+		assertEquals("JASON_C1", collectionBO.getValue());
+		assertEquals("String", statusBO.getType());
+		assertEquals("SUCCESS", statusBO.getValue());
 	}
 
 	/**
