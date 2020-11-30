@@ -1,6 +1,5 @@
 package gov.nasa.cumulus;
 
-import com.amazonaws.services.sns.model.MessageAttributeValue;
 import com.amazonaws.services.sns.model.NotFoundException;
 import com.google.gson.*;
 import gov.nasa.cumulus.cnmresponse.bo.MessageAttributeBO;
