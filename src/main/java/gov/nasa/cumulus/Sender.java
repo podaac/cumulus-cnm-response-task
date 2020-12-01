@@ -2,6 +2,7 @@ package gov.nasa.cumulus;
 
 import com.amazonaws.services.sns.model.MessageAttributeValue;
 import com.google.gson.JsonArray;
+import cumulus_message_adapter.message_parser.AdapterLogger;
 import gov.nasa.cumulus.cnmresponse.bo.MessageAttributeBO;
 
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import java.util.Map;
  */
 public abstract class Sender {
     private String region;
+    String className = this.getClass().getName();
     Map<String, MessageAttributeValue> messageAttributes = new HashMap<>();
 
     public Sender(String region) {
@@ -24,7 +26,7 @@ public abstract class Sender {
      */
     public void addMessageAttributes(Map<String, MessageAttributeBO> attributes) {
         for (Map.Entry<String, MessageAttributeBO> entry : attributes.entrySet()) {
-            System.out.println(entry.getKey() + ":" + entry.getValue());
+            AdapterLogger.LogInfo(this.className + "Message Attributes key:value -> " + entry.getKey() + ":" + entry.getValue().getValue());
             messageAttributes.put(entry.getKey(), new MessageAttributeValue()
                     .withDataType(entry.getValue().getType())
                     .withStringValue(entry.getValue().getValue()));
