@@ -1,14 +1,16 @@
 package gov.nasa.cumulus.bo;
 
-public class MessageAttribute {
-    String type;
+import gov.nasa.cumulus.IConstants;
+
+public class MessageAttribute implements IConstants {
+    MessageFilterTypeEnum type;
     String value;
 
-    public String getType() {
+    public MessageFilterTypeEnum getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(MessageFilterTypeEnum type) {
         this.type = type;
     }
 
