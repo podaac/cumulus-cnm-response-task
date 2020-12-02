@@ -2,6 +2,7 @@ package gov.nasa.cumulus;
 
 import com.amazonaws.services.sns.model.NotFoundException;
 import com.google.gson.*;
+import gov.nasa.cumulus.bo.MessageAttribute;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -13,6 +14,7 @@ import org.mockito.Mockito;
 
 import java.net.URI;
 import java.nio.file.Files;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.UUID;
 import java.io.File;
@@ -23,7 +25,7 @@ import java.io.IOException;
  * Unit test for simple App.
  */
 public class AppTest
-    extends TestCase
+    extends TestCase implements IConstants
 {
     /**
      * Create the test case
@@ -218,6 +220,20 @@ public class AppTest
 		assertNotNull(ingestionMetadata);
 		assertEquals("G1234313662-POCUMULUS", ingestionMetadata.get("catalogId").getAsString());
 		assertEquals("https://cmr.uat.earthdata.nasa.gov/search/granules.json?concept_id=G1234313662-POCUMULUS", ingestionMetadata.get("catalogUrl").getAsString());
+	}
+
+	public void testBuildMessageAttributesHash() {
+		CNMResponse cnmResponse = new CNMResponse();
+		Map<String, MessageAttribute> attributeBOMap =  cnmResponse.buildMessageAttributesHash("JASON_C1", "E","SUCCESS");
+		MessageAttribute collectionBO = attributeBOMap.get(this.COLLECTION_SHORT_NAME_ATTRIBUTE_KEY);
+		MessageAttribute statusBO = attributeBOMap.get(this.CNM_RESPONSE_STATUS_ATTRIBUTE_KEY);
+		MessageAttribute dataVersionBO = attributeBOMap.get(this.DATA_VERSION_ATTRIBUTE_KEY);
+		assertEquals(MessageFilterTypeEnum.String, collectionBO.getType());
+		assertEquals("JASON_C1", collectionBO.getValue());
+		assertEquals(MessageFilterTypeEnum.String, statusBO.getType());
+		assertEquals("SUCCESS", statusBO.getValue());
+		assertEquals(MessageFilterTypeEnum.String, dataVersionBO.getType());
+		assertEquals("E", dataVersionBO.getValue());
 	}
 
 	/**

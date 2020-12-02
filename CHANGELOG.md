@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Unreleased] 
 ### Added
+- **PODAAC-2783**
+  - Added following Message Attributes to CNMResponse
+     COLLECTION
+     CNM_RESPONSE_STATUS
+     DATA_VERSION
 ### Changed
 ### Deprecated
 ### Removed
@@ -16,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Upgrade com.amazonaws:aws-java-sdk-core:1.11.660 -> 1.11.903
   - Upgrade com.amazonaws:aws-java-sdk-kinesis:1.11.439 -> 1.11.903
   - Upgrade com.amazonaws:aws-java-sdk-sns:1.11.342 -> 1.11.903
-
+  
 # [v1.1.1] - 2020-11-19
 ### Added
 ### Changed
