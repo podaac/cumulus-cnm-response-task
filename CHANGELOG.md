@@ -9,8 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **PODAAC-2783**
   - Added following Message Attributes to CNMResponse
-     COLLECTION_SHORT_NAME
+     COLLECTION
      CNM_RESPONSE_STATUS
+     DATA_VERSION
 ### Changed
 ### Deprecated
 ### Removed

@@ -28,7 +28,7 @@ public abstract class Sender {
         for (Map.Entry<String, MessageAttribute> entry : attributes.entrySet()) {
             AdapterLogger.LogInfo(this.className + "Message Attributes key:value -> " + entry.getKey() + ":" + entry.getValue().getValue());
             messageAttributes.put(entry.getKey(), new MessageAttributeValue()
-                    .withDataType(entry.getValue().getType())
+                    .withDataType(entry.getValue().getType().name())
                     .withStringValue(entry.getValue().getValue()));
         }
     }

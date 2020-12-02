@@ -190,12 +190,11 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
 
         JsonObject inputConfig = inputKey.getAsJsonObject("config");
         String cnm = new Gson().toJson(inputConfig.get("OriginalCNM"));
-        String collection = inputConfig.getAsJsonObject("OriginalCNM").get("collection").getAsString();
-        // product.dataVersion does not always exist.  Hence, null checking first.
-        String dataVersion = ObjectUtils.allNotNull(inputConfig.getAsJsonObject("OriginalCNM").getAsJsonObject("product"),
-                inputConfig.getAsJsonObject("OriginalCNM").getAsJsonObject("product"))?
-                inputConfig.getAsJsonObject("OriginalCNM").getAsJsonObject("product").get("dataVersion")
-                        .getAsString() : "";
+        JsonObject originalCnm = inputConfig.getAsJsonObject("OriginalCNM");
+        String collection = originalCnm.get("collection").getAsString();
+        String dataVersion = ObjectUtils.allNotNull(originalCnm.getAsJsonObject("product"),
+                originalCnm.getAsJsonObject("product").get("dataVersion")) ?
+                originalCnm.getAsJsonObject("product").get("dataVersion").getAsString() : "";
         String exception = getError(inputConfig, "WorkflowException");
 
         JsonObject granule = inputKey.get("input").getAsJsonObject().get("granules").getAsJsonArray().get(0).getAsJsonObject();
@@ -233,17 +232,17 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
     Map<String, MessageAttribute> buildMessageAttributesHash(String collection_name, String dataVersion, String status) {
         Map<String, MessageAttribute> attributeBOMap = new HashMap<>();
         MessageAttribute collectionNameBO = new MessageAttribute();
-        collectionNameBO.setType(MessageFilterTypeEnum.String.name());
+        collectionNameBO.setType(MessageFilterTypeEnum.String);
         collectionNameBO.setValue(collection_name);
         attributeBOMap.put(this.COLLECTION_SHORT_NAME_ATTRIBUTE_KEY, collectionNameBO);
         MessageAttribute statusBO = new MessageAttribute();
-        statusBO.setType(MessageFilterTypeEnum.String.name());
+        statusBO.setType(MessageFilterTypeEnum.String);
         statusBO.setValue(status);
         attributeBOMap.put(this.CNM_RESPONSE_STATUS_ATTRIBUTE_KEY, statusBO);
         MessageAttribute dataVersionBO = new MessageAttribute();
-        dataVersionBO.setType(MessageFilterTypeEnum.String.name());
+        dataVersionBO.setType(MessageFilterTypeEnum.String);
         dataVersionBO.setValue(dataVersion);
-        attributeBOMap.put(this.DATA_VERSION, dataVersionBO);
+        attributeBOMap.put(this.DATA_VERSION_ATTRIBUTE_KEY, dataVersionBO);
         return attributeBOMap;
     }
 }
