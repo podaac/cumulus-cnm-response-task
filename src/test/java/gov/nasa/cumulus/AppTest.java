@@ -2,7 +2,7 @@ package gov.nasa.cumulus;
 
 import com.amazonaws.services.sns.model.NotFoundException;
 import com.google.gson.*;
-import gov.nasa.cumulus.cnmresponse.bo.MessageAttributeBO;
+import gov.nasa.cumulus.cnmresponse.bo.MessageAttribute;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -25,7 +25,7 @@ import java.io.IOException;
  * Unit test for simple App.
  */
 public class AppTest
-    extends TestCase
+    extends TestCase implements IConstants
 {
     /**
      * Create the test case
@@ -224,13 +224,16 @@ public class AppTest
 
 	public void testBuildMessageAttributesHash() {
 		CNMResponse cnmResponse = new CNMResponse();
-		Map<String, MessageAttributeBO> attributeBOMap =  cnmResponse.buildMessageAttributesHash("JASON_C1", "SUCCESS");
-		MessageAttributeBO collectionBO = attributeBOMap.get("COLLECTION_SHORT_NAME");
-		MessageAttributeBO statusBO = attributeBOMap.get("CNM_RESPONSE_STATUS");
-		assertEquals("String", collectionBO.getType());
+		Map<String, MessageAttribute> attributeBOMap =  cnmResponse.buildMessageAttributesHash("JASON_C1", "E","SUCCESS");
+		MessageAttribute collectionBO = attributeBOMap.get(this.COLLECTION_SHORT_NAME_ATTRIBUTE_KEY);
+		MessageAttribute statusBO = attributeBOMap.get(this.CNM_RESPONSE_STATUS_ATTRIBUTE_KEY);
+		MessageAttribute dataVersionBO = attributeBOMap.get(this.DATA_VERSION);
+		assertEquals(MessageFilterTypeEnum.String.name(), collectionBO.getType());
 		assertEquals("JASON_C1", collectionBO.getValue());
-		assertEquals("String", statusBO.getType());
+		assertEquals(MessageFilterTypeEnum.String.name(), statusBO.getType());
 		assertEquals("SUCCESS", statusBO.getValue());
+		assertEquals(MessageFilterTypeEnum.String.name(), dataVersionBO.getType());
+		assertEquals("E", dataVersionBO.getValue());
 	}
 
 	/**

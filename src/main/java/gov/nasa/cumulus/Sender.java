@@ -3,7 +3,7 @@ package gov.nasa.cumulus;
 import com.amazonaws.services.sns.model.MessageAttributeValue;
 import com.google.gson.JsonArray;
 import cumulus_message_adapter.message_parser.AdapterLogger;
-import gov.nasa.cumulus.cnmresponse.bo.MessageAttributeBO;
+import gov.nasa.cumulus.cnmresponse.bo.MessageAttribute;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,8 +24,8 @@ public abstract class Sender {
      * This function does not support type of String.array yet but it serve the purpose
      * of String and Numeric
      */
-    public void addMessageAttributes(Map<String, MessageAttributeBO> attributes) {
-        for (Map.Entry<String, MessageAttributeBO> entry : attributes.entrySet()) {
+    public void addMessageAttributes(Map<String, MessageAttribute> attributes) {
+        for (Map.Entry<String, MessageAttribute> entry : attributes.entrySet()) {
             AdapterLogger.LogInfo(this.className + "Message Attributes key:value -> " + entry.getKey() + ":" + entry.getValue().getValue());
             messageAttributes.put(entry.getKey(), new MessageAttributeValue()
                     .withDataType(entry.getValue().getType())

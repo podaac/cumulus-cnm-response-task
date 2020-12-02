@@ -7,7 +7,7 @@ import cumulus_message_adapter.message_parser.AdapterLogger;
 import cumulus_message_adapter.message_parser.ITask;
 import cumulus_message_adapter.message_parser.MessageAdapterException;
 import cumulus_message_adapter.message_parser.MessageParser;
-import gov.nasa.cumulus.cnmresponse.bo.MessageAttributeBO;
+import gov.nasa.cumulus.cnmresponse.bo.MessageAttribute;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
@@ -25,10 +25,8 @@ import java.util.Map;
 import java.util.TimeZone;
 
 
-public class CNMResponse implements ITask, RequestHandler<String, String> {
+public class CNMResponse implements ITask, IConstants, RequestHandler<String, String> {
     String className = this.getClass().getName();
-    final String COLLECTION_SHORT_NAME_ATTRIBUTE_KEY = "COLLECTION_SHORT_NAME";
-    final String CNM_RESPONSE_STATUS_ATTRIBUTE_KEY = "CNM_RESPONSE_STATUS";
 
     public enum ErrorCode {VALIDATION_ERROR, TRANSFER_ERROR, PROCESSING_ERROR};
 
@@ -192,6 +190,8 @@ public class CNMResponse implements ITask, RequestHandler<String, String> {
         JsonObject inputConfig = inputKey.getAsJsonObject("config");
         String cnm = new Gson().toJson(inputConfig.get("OriginalCNM"));
         String collection = inputConfig.getAsJsonObject("OriginalCNM").get("collection").getAsString();
+        String dataVersion = inputConfig.getAsJsonObject("OriginalCNM").getAsJsonObject("product").get("dataVersion")
+                .getAsString();
         String exception = getError(inputConfig, "WorkflowException");
 
         JsonObject granule = inputKey.get("input").getAsJsonObject().get("granules").getAsJsonArray().get(0).getAsJsonObject();
@@ -204,7 +204,7 @@ public class CNMResponse implements ITask, RequestHandler<String, String> {
         AdapterLogger.LogInfo(this.className + " region:" + region + " method:" + method);
         JsonElement responseEndpoint = inputConfig.get("response-endpoint");
         if (method != null) {
-            Map<String, MessageAttributeBO> attributeBOMap = buildMessageAttributesHash(collection, final_status);
+            Map<String, MessageAttribute> attributeBOMap = buildMessageAttributesHash(collection, dataVersion, final_status);
             Sender sender = SenderFactory.getSender(region, method);
             sender.addMessageAttributes(attributeBOMap);
             if (responseEndpoint.isJsonArray()) {
@@ -226,16 +226,20 @@ public class CNMResponse implements ITask, RequestHandler<String, String> {
         return new Gson().toJson(bigOutput);
     }
 
-    Map<String, MessageAttributeBO> buildMessageAttributesHash(String collection_name, String status) {
-        Map<String, MessageAttributeBO> attributeBOMap = new HashMap<>();
-        MessageAttributeBO collectionNameBO = new MessageAttributeBO();
-        collectionNameBO.setType("String");
+    Map<String, MessageAttribute> buildMessageAttributesHash(String collection_name, String dataVersion, String status) {
+        Map<String, MessageAttribute> attributeBOMap = new HashMap<>();
+        MessageAttribute collectionNameBO = new MessageAttribute();
+        collectionNameBO.setType(MessageFilterTypeEnum.String.name());
         collectionNameBO.setValue(collection_name);
         attributeBOMap.put(this.COLLECTION_SHORT_NAME_ATTRIBUTE_KEY, collectionNameBO);
-        MessageAttributeBO statusBO = new MessageAttributeBO();
-        statusBO.setType("String");
+        MessageAttribute statusBO = new MessageAttribute();
+        statusBO.setType(MessageFilterTypeEnum.String.name());
         statusBO.setValue(status);
         attributeBOMap.put(this.CNM_RESPONSE_STATUS_ATTRIBUTE_KEY, statusBO);
+        MessageAttribute dataVersionBO = new MessageAttribute();
+        dataVersionBO.setType(MessageFilterTypeEnum.String.name());
+        dataVersionBO.setValue(dataVersion);
+        attributeBOMap.put(this.DATA_VERSION, dataVersionBO);
         return attributeBOMap;
     }
 }

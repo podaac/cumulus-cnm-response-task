@@ -3,14 +3,8 @@ package gov.nasa.cumulus;
 import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.amazonaws.services.sns.model.PublishRequest;
-import com.amazonaws.services.sns.model.MessageAttributeValue;
-import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import gov.nasa.cumulus.cnmresponse.bo.MessageAttributeBO;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * SNS message sender

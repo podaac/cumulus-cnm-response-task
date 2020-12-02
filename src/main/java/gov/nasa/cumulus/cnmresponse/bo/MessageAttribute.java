@@ -1,6 +1,6 @@
 package gov.nasa.cumulus.cnmresponse.bo;
 
-public class MessageAttributeBO {
+public class MessageAttribute {
     String type;
     String value;
 
