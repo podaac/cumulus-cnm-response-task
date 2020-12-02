@@ -3,7 +3,7 @@ package gov.nasa.cumulus;
 import com.amazonaws.services.sns.model.MessageAttributeValue;
 import com.google.gson.JsonArray;
 import cumulus_message_adapter.message_parser.AdapterLogger;
-import gov.nasa.cumulus.cnmresponse.bo.MessageAttribute;
+import gov.nasa.cumulus.bo.MessageAttribute;
 
 import java.util.HashMap;
 import java.util.Map;

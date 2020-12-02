@@ -7,8 +7,9 @@ import cumulus_message_adapter.message_parser.AdapterLogger;
 import cumulus_message_adapter.message_parser.ITask;
 import cumulus_message_adapter.message_parser.MessageAdapterException;
 import cumulus_message_adapter.message_parser.MessageParser;
-import gov.nasa.cumulus.cnmresponse.bo.MessageAttribute;
+import gov.nasa.cumulus.bo.MessageAttribute;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 
@@ -190,8 +191,11 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
         JsonObject inputConfig = inputKey.getAsJsonObject("config");
         String cnm = new Gson().toJson(inputConfig.get("OriginalCNM"));
         String collection = inputConfig.getAsJsonObject("OriginalCNM").get("collection").getAsString();
-        String dataVersion = inputConfig.getAsJsonObject("OriginalCNM").getAsJsonObject("product").get("dataVersion")
-                .getAsString();
+        // product.dataVersion does not always exist.  Hence, null checking first.
+        String dataVersion = ObjectUtils.allNotNull(inputConfig.getAsJsonObject("OriginalCNM").getAsJsonObject("product"),
+                inputConfig.getAsJsonObject("OriginalCNM").getAsJsonObject("product"))?
+                inputConfig.getAsJsonObject("OriginalCNM").getAsJsonObject("product").get("dataVersion")
+                        .getAsString() : "";
         String exception = getError(inputConfig, "WorkflowException");
 
         JsonObject granule = inputKey.get("input").getAsJsonObject().get("granules").getAsJsonArray().get(0).getAsJsonObject();

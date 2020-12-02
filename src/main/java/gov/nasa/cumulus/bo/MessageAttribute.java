@@ -1,4 +1,4 @@
-package gov.nasa.cumulus.cnmresponse.bo;
+package gov.nasa.cumulus.bo;
 
 public class MessageAttribute {
     String type;

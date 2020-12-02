@@ -2,7 +2,7 @@ package gov.nasa.cumulus;
 
 import com.amazonaws.services.sns.model.NotFoundException;
 import com.google.gson.*;
-import gov.nasa.cumulus.cnmresponse.bo.MessageAttribute;
+import gov.nasa.cumulus.bo.MessageAttribute;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
