@@ -178,6 +178,32 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
         return exception;
     }
 
+    public static String generateGeneralError(String input) {
+        JsonElement jelement = new JsonParser().parse(input);
+        JsonObject inputKey = jelement.getAsJsonObject();
+        JsonObject response = getResponseObject("CNMResponse Exception");
+        // remove the product information
+        inputKey.remove("product");
+        inputKey.add("response", response);
+        // add the completion timestamp
+        TimeZone tz = TimeZone.getTimeZone("UTC");
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        df.setTimeZone(tz);
+        String nowAsISO = df.format(new Date());
+        inputKey.addProperty("processCompleteTime", nowAsISO);
+        return new Gson().toJson(inputKey);
+    }
+
+    public static void sendSNS(String output, String method, String region, JsonElement endPoint) {
+        if (method != null) {
+            if (endPoint.isJsonArray()) {
+                SenderFactory.getSender(region, method).sendMessage(output, endPoint.getAsJsonArray());
+            } else {
+                SenderFactory.getSender(region, method).sendMessage(output, endPoint.getAsString());
+            }
+        }
+    }
+
     //inputs
     // OriginalCNM
     // CNMResponseStream
