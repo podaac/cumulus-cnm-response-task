@@ -22,6 +22,7 @@ public class SNSSender extends Sender {
         this.snsClient = snsClient;
     }
 
+
     /**
      * Sends response message to specified SNS topic
      *
@@ -30,6 +31,7 @@ public class SNSSender extends Sender {
      */
     public void sendMessage(String response, String endpoint) {
         final PublishRequest publishRequest = new PublishRequest(endpoint, response);
+        publishRequest.withMessageAttributes(this.messageAttributes);
         this.snsClient.publish(publishRequest);
     }
 
