@@ -38,6 +38,7 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
             return parser.RunCumulusTask(input, context, new CNMResponse());
         } catch (MessageAdapterException e) {
             AdapterLogger.LogError(this.className + " handleRequest error:" + e.getMessage());
+            this.sendGeneralErrorResponse(input, e);
             return e.getMessage();
         }
     }
@@ -46,7 +47,15 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
         MessageParser parser = new MessageParser();
         String input = IOUtils.toString(inputStream, "UTF-8");
         AdapterLogger.LogDebug(this.className + " handleRequestStreams input:" + input);
-        String output = parser.RunCumulusTask(input, context, new CNMResponse());
+        String output;
+        try {
+            output = parser.RunCumulusTask(input, context, new CNMResponse());
+        } catch (Exception e) {
+            AdapterLogger.LogError(this.className + " handleRequestStreams error:" + e.getMessage());
+            this.sendGeneralErrorResponse(input, e);
+            // re-throw the exception now
+            throw e;
+        }
         AdapterLogger.LogDebug(this.className + " handleRequestStreams output:" + output);
         outputStream.write(output.getBytes(Charset.forName("UTF-8")));
     }
@@ -178,23 +187,65 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
         return exception;
     }
 
-    public static String generateGeneralError(String input) {
-        JsonElement jelement = new JsonParser().parse(input);
-        JsonObject inputKey = jelement.getAsJsonObject();
-        JsonObject response = getResponseObject("CNMResponse Exception");
-        // remove the product information
-        inputKey.remove("product");
-        inputKey.add("response", response);
+    /**
+     * Generates the minimum required JSON object according to the
+     * CNM Schema 1.0; see file: cumulus_sns_v1.0_response_failure_2.json
+     * <br><br>
+     * This will be called/run when we encounter (and catch)
+     * an exception during 'handleRequest' parser.RunCumulustask()
+     *
+     * @param input     the input json from from parser.RunCumulusTaask()
+     * @param cause     the message string from the exception that was thrown
+     *                  by parser.RunCumulurTask()
+     * @return          the response failure JSON, as string
+     */
+    public String generateGeneralError(JsonObject input, String cause) {
+        // the minimum fields necessary to conform to the CNM schema
+        String[] schemaFields = {"version", "provider", "collection", "submissionTime", "receivedTime", "identifier"};
+        JsonObject failureJson = new JsonObject();
+        JsonObject cnm;
+        // determine if the values we need are under 'input' or
+        // 'config > originalcnm' key
+        if (input.getAsJsonObject("input").has("collection")) {
+            cnm = input.getAsJsonObject("input");
+        } else {
+            cnm = input.getAsJsonObject("config").getAsJsonObject("OriginalCNM");
+        }
+        for (String field : schemaFields) {
+            if (cnm.has(field)) {
+                // if the input json has the field we need, use it
+                failureJson.add(field, cnm.get(field));
+            } else {
+                // otherwise, for the time being, just fill in as unknown/missing.
+                // theoretically this should never happen, but we need to ensure the
+                // message always gets sent.
+                failureJson.addProperty(field, "Unknown/Missing " + field);
+            }
+        }
+        // add the actual failure response now
+        JsonObject response = new JsonObject();
+        response.addProperty("status", "FAILURE");
+        response.addProperty("errorCode", ErrorCode.PROCESSING_ERROR.toString());
+        response.addProperty("errorMessage", cause);
+        failureJson.add("response", response);
         // add the completion timestamp
         TimeZone tz = TimeZone.getTimeZone("UTC");
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         df.setTimeZone(tz);
         String nowAsISO = df.format(new Date());
-        inputKey.addProperty("processCompleteTime", nowAsISO);
-        return new Gson().toJson(inputKey);
+        failureJson.addProperty("processCompleteTime", nowAsISO);
+        return new Gson().toJson(failureJson);
     }
 
-    public static void sendSNS(String output, String method, String region, JsonElement endPoint) {
+    public void sendGeneralErrorResponse(String input, Exception e) {
+        AdapterLogger.LogDebug(this.className + " Entered sendGeneralErrorResponse with input String: " + input);
+        String cause = e.getMessage();
+        JsonElement jelement = new JsonParser().parse(input);
+        JsonObject inputKey = jelement.getAsJsonObject();
+        String output = generateGeneralError(inputKey, cause);
+        JsonElement endPoint = inputKey.getAsJsonObject("config").get("response-endpoint");
+        String method = inputKey.getAsJsonObject("config").get("type").getAsString();
+        String region = inputKey.getAsJsonObject("config").get("region").getAsString();
         if (method != null) {
             if (endPoint.isJsonArray()) {
                 SenderFactory.getSender(region, method).sendMessage(output, endPoint.getAsJsonArray());
