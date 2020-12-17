@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 ### Removed
 ### Fixed
+- **PODAAC-2552**
+  - Catch exceptions during 'handleRequest' and 'handleRequestStreams' and always send a failure response message, before re-throwing the exception.
 ### Security
 - **Snyk**
   - Upgrade com.amazonaws:aws-java-sdk-core:1.11.660 -> 1.11.903
