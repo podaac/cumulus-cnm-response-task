@@ -2,6 +2,7 @@ package gov.nasa.cumulus;
 
 import com.amazonaws.services.sns.model.NotFoundException;
 import com.google.gson.*;
+import cumulus_message_adapter.message_parser.MessageAdapterException;
 import gov.nasa.cumulus.bo.MessageAttribute;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -174,6 +175,43 @@ public class AppTest
 		assertEquals(CNMResponse.ErrorCode.VALIDATION_ERROR.toString(), responseUnexpectedFileSize.get("errorCode").getAsString());
 		assertEquals("Placeholder for UnexpectedFileSize message", responseUnexpectedFileSize.get("errorMessage").getAsString());
 	}
+
+	public void testGeneralFailure() throws Exception {
+        ClassLoader classLoader = getClass().getClassLoader();
+        CNMResponse cnmResponse = new CNMResponse();
+        File inputJsonFile = new File(classLoader.getResource("workflow.granulefailure.json").getFile());
+
+        String input = "";
+        try {
+            input = new String(Files.readAllBytes(inputJsonFile.toPath()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        JsonElement jelement = new JsonParser().parse(input);
+        JsonObject inputKey = jelement.getAsJsonObject();
+        MessageAdapterException ex = new MessageAdapterException("Test exception.");
+        String output = cnmResponse.buildGeneralError(inputKey, ex.getMessage());
+        JsonElement outputElement = new JsonParser().parse(output);
+        JsonObject outputJson = outputElement.getAsJsonObject();
+        // check that we have the minimum acceptable json according to the schema
+        String[] schemaFields = {"version", "provider", "collection", "submissionTime", "receivedTime", "identifier",
+                "response"};
+        for (String field : schemaFields) {
+            assertTrue(outputJson.has(field));
+        }
+        // now check all  the top level elements are included, and correct
+        assertEquals("L0A_KCAL_Packet", outputJson.get("collection").getAsString());
+        assertEquals("1.0", outputJson.get("version").getAsString());
+        assertEquals("PODAAC", outputJson.get("provider").getAsString());
+        assertEquals("2020-07-05T20:42:32.682418", outputJson.get("submissionTime").getAsString());
+        assertEquals("PODAAC", outputJson.get("provider").getAsString());
+        // now check the response section
+        JsonObject response = outputElement.getAsJsonObject().get("response").getAsJsonObject();
+        assertEquals("FAILURE", response.get("status").getAsString());
+        assertEquals("PROCESSING_ERROR", response.get("errorCode").getAsString());
+        assertNotNull(response.get("errorMessage").getAsString());
+    }
 
 	/**
 	 * Test success CNM response
