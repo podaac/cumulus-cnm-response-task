@@ -233,8 +233,8 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
      * Gets the value for the 'DataVersion' field, to be used
      * by the 'buildMessageAttributesHash' method.
      * <br><br>
-     * Tries to use the OriginalCNM > Product > DataVersion from the
-     * input > config section, of the provided Json, but in case of an error,
+     * Tries to use the 'OriginalCNM > Product > DataVersion' from the
+     * 'input > config' section, of the provided Json, but in case of an error,
      * return a generic error string.
      *<br><br>
      * @param input     the input > config section, as a JsonObject
@@ -254,9 +254,9 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
      * Gets the value for the 'collection' field, to be used
      * by the 'buildMessageAttributesHash' method.
      * <br><br>
-     * First to use the OriginalCNM > collection
+     * First try to use the OriginalCNM > collection field
      * Next checks input > collection
-     * If neither is available, the returns a generic error string
+     * If neither is available, then returns a generic error string
      *<br><br>
      * @param input     the raw input to PerformFunction, as JsonObject
      * @return          the string to use as the 'collection' value
@@ -301,7 +301,7 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
      * using the 'response > status' field from the 'output'
      * along with the provided values for 'collection' and 'dataversion'
      * <br><br>
-     * @param output        the final output message, as String
+     * @param output        the final output json message, as String
      * @param method        the method to use, 'Kinesis' or 'Sns' when sending
      * @param region        the region to send the message to
      * @param endpoint      the actual endpoint for the message
