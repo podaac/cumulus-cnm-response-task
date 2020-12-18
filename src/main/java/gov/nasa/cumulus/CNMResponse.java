@@ -38,7 +38,6 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
             return parser.RunCumulusTask(input, context, new CNMResponse());
         } catch (MessageAdapterException e) {
             AdapterLogger.LogError(this.className + " handleRequest error:" + e.getMessage());
-            this.sendGeneralErrorResponse(input, e);
             return e.getMessage();
         }
     }
@@ -47,15 +46,7 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
         MessageParser parser = new MessageParser();
         String input = IOUtils.toString(inputStream, "UTF-8");
         AdapterLogger.LogDebug(this.className + " handleRequestStreams input:" + input);
-        String output;
-        try {
-            output = parser.RunCumulusTask(input, context, new CNMResponse());
-        } catch (Exception e) {
-            AdapterLogger.LogError(this.className + " handleRequestStreams error:" + e.getMessage());
-            this.sendGeneralErrorResponse(input, e);
-            // re-throw the exception now
-            throw e;
-        }
+        String output = parser.RunCumulusTask(input, context, new CNMResponse());
         AdapterLogger.LogDebug(this.className + " handleRequestStreams output:" + output);
         outputStream.write(output.getBytes(Charset.forName("UTF-8")));
     }
@@ -192,14 +183,13 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
      * CNM Schema 1.0; see file: cumulus_sns_v1.0_response_failure_2.json
      * <br><br>
      * This will be called/run when we encounter (and catch)
-     * an exception during 'handleRequest' parser.RunCumulustask()
-     *
-     * @param input     the input json from from parser.RunCumulusTaask()
+     * any exception during 'performFunction'
+     *<br><br>
+     * @param input     the input, as JSON from 'PerformFunction'
      * @param cause     the message string from the exception that was thrown
-     *                  by parser.RunCumulurTask()
      * @return          the response failure JSON, as string
      */
-    public String generateGeneralError(JsonObject input, String cause) {
+    public String buildGeneralError(JsonObject input, String cause) {
         // the minimum fields necessary to conform to the CNM schema
         String[] schemaFields = {"version", "provider", "collection", "submissionTime", "receivedTime", "identifier"};
         JsonObject failureJson = new JsonObject();
@@ -237,20 +227,99 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
         return new Gson().toJson(failureJson);
     }
 
-    public void sendGeneralErrorResponse(String input, Exception e) {
-        AdapterLogger.LogDebug(this.className + " Entered sendGeneralErrorResponse with input String: " + input);
-        String cause = e.getMessage();
-        JsonElement jelement = new JsonParser().parse(input);
-        JsonObject inputKey = jelement.getAsJsonObject();
-        String output = generateGeneralError(inputKey, cause);
-        JsonElement endPoint = inputKey.getAsJsonObject("config").get("response-endpoint");
-        String method = inputKey.getAsJsonObject("config").get("type").getAsString();
-        String region = inputKey.getAsJsonObject("config").get("region").getAsString();
-        if (method != null) {
-            if (endPoint.isJsonArray()) {
-                SenderFactory.getSender(region, method).sendMessage(output, endPoint.getAsJsonArray());
+    /**
+     * Gets the value for the 'DataVersion' field, to be used
+     * by the 'buildMessageAttributesHash' method.
+     * <br><br>
+     * Tries to use the OriginalCNM > Product > DataVersion from the
+     * input > config section, of the provided Json, but in case of an error,
+     * return a generic error string.
+     *<br><br>
+     * @param input     the input > config section, as a JsonObject
+     * @return          the string to use as the 'dataVersion' value
+     */
+    public String getDataVersion(JsonObject input) {
+        try {
+            return input.getAsJsonObject("OriginalCNM")
+                    .getAsJsonObject("product")
+                    .get("dataVersion").getAsString();
+        } catch (Exception e) {
+            return "Unknown/Missing";
+        }
+    }
+
+    /**
+     * Gets the value for the 'collection' field, to be used
+     * by the 'buildMessageAttributesHash' method.
+     * <br><br>
+     * First to use the OriginalCNM > collection
+     * Next checks input > collection
+     * If neither is available, the returns a generic error string
+     *<br><br>
+     * @param input     the raw input to PerformFunction, as JsonObject
+     * @return          the string to use as the 'collection' value
+     */
+    public String getCollection(JsonObject input) {
+        try {
+            return input.getAsJsonObject("config")
+                    .getAsJsonObject("OriginalCNM")
+                    .get("collection").getAsString();
+        } catch (Exception e) {
+            if (input.has("collection")) {
+                return input.getAsJsonObject("collection").getAsString();
             } else {
-                SenderFactory.getSender(region, method).sendMessage(output, endPoint.getAsString());
+                return "Unknown/Missing";
+            }
+        }
+    }
+
+    /**
+     * Intermediate method called during 'PerformFunction' to
+     * build the 'output' for the final message, via 'generateOutput'
+     * <br><br>
+     * @param inputKey      the complete 'input' as JsonObject
+     * @param inputConfig   the input > config section, as JsonObject
+     * @return              the output json, as a string,
+     * @throws Exception
+     */
+    public String buildMessage(JsonObject inputKey, JsonObject inputConfig) throws Exception {
+        String cnm = new Gson().toJson(inputConfig.get("OriginalCNM"));
+        JsonObject granule = inputKey.get("input").getAsJsonObject()
+                .get("granules").getAsJsonArray()
+                .get(0).getAsJsonObject();
+        String exception = getError(inputConfig, "WorkflowException");
+        return CNMResponse.generateOutput(cnm, exception, granule, inputConfig);
+    }
+
+    /**
+     * Actually sends the message, using the specified output string,
+     * method (Kinesis or sns), region, and endpoint.
+     * <br><br>
+     * Builds the attributeMap for the message via 'buildMessageAttributesHash'
+     * using the 'response > status' field from the 'output'
+     * along with the provided values for 'collection' and 'dataversion'
+     * <br><br>
+     * @param output        the final output message, as String
+     * @param method        the method to use, 'Kinesis' or 'Sns' when sending
+     * @param region        the region to send the message to
+     * @param endpoint      the actual endpoint for the message
+     * @param collection    the collection value for the attribute hash
+     * @param dataVersion   the dataVersion value for the attribute hash
+     */
+    public void sendMessage(String output, String method, String region,
+                                   JsonElement endpoint, String collection,
+                                   String dataVersion) {
+        // convert the final output to a JsonObject, so we can get 'response status'
+        JsonObject outputJsonObj = new JsonParser().parse(output).getAsJsonObject();
+        String final_status = outputJsonObj.getAsJsonObject("response").get("status").getAsString();
+        if (method != null) {
+            Map<String, MessageAttribute> attributeBOMap = buildMessageAttributesHash(collection, dataVersion, final_status);
+            Sender sender = SenderFactory.getSender(region, method);
+            sender.addMessageAttributes(attributeBOMap);
+            if (endpoint.isJsonArray()) {
+                sender.sendMessage(output, endpoint.getAsJsonArray());
+            } else {
+                sender.sendMessage(output, endpoint.getAsString());
             }
         }
     }
@@ -264,46 +333,34 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
         AdapterLogger.LogDebug(this.className + " Entered PerformFunction with input String: " + input);
         JsonElement jelement = new JsonParser().parse(input);
         JsonObject inputKey = jelement.getAsJsonObject();
-
         JsonObject inputConfig = inputKey.getAsJsonObject("config");
-        String cnm = new Gson().toJson(inputConfig.get("OriginalCNM"));
-        JsonObject originalCnm = inputConfig.getAsJsonObject("OriginalCNM");
-        String collection = originalCnm.get("collection").getAsString();
-        String dataVersion = ObjectUtils.allNotNull(originalCnm.getAsJsonObject("product"),
-                originalCnm.getAsJsonObject("product").get("dataVersion")) ?
-                originalCnm.getAsJsonObject("product").get("dataVersion").getAsString() : "";
-        String exception = getError(inputConfig, "WorkflowException");
-
-        JsonObject granule = inputKey.get("input").getAsJsonObject().get("granules").getAsJsonArray().get(0).getAsJsonObject();
-
-        String output = CNMResponse.generateOutput(cnm, exception, granule, inputConfig);
-        JsonObject outputJsonObj = new JsonParser().parse(output).getAsJsonObject();
-        String final_status = outputJsonObj.getAsJsonObject("response").get("status").getAsString();
         String method = inputConfig.get("type").getAsString();
         String region = inputConfig.get("region").getAsString();
         AdapterLogger.LogInfo(this.className + " region:" + region + " method:" + method);
         JsonElement responseEndpoint = inputConfig.get("response-endpoint");
-        if (method != null) {
-            Map<String, MessageAttribute> attributeBOMap = buildMessageAttributesHash(collection, dataVersion, final_status);
-            Sender sender = SenderFactory.getSender(region, method);
-            sender.addMessageAttributes(attributeBOMap);
-            if (responseEndpoint.isJsonArray()) {
-                sender.sendMessage(output, responseEndpoint.getAsJsonArray());
-            } else {
-                sender.sendMessage(output, responseEndpoint.getAsString());
-            }
+        // get collection and dataVersion for use in message attribute hash
+        String collection = getCollection(inputKey);
+        String dataVersion = getDataVersion(inputConfig);
+        String output;
+        try {
+            output = buildMessage(inputKey, inputConfig);
+            sendMessage(output, method, region, responseEndpoint, collection, dataVersion);
+            /* create new object:
+             *
+             * {cnm: output, input:input}
+             *
+             */
+            JsonObject bigOutput = new JsonObject();
+            bigOutput.add("cnm", new JsonParser().parse(output).getAsJsonObject());
+            bigOutput.add("input", new JsonParser().parse(input).getAsJsonObject());
+            return new Gson().toJson(bigOutput);
+        } catch (Exception ex) {
+            AdapterLogger.LogError(this.className + " encountered exception with input String: " + input);
+            output = buildGeneralError(inputKey, ex.getMessage());
+            sendMessage(output, method, region, responseEndpoint, collection, dataVersion);
+            // re-throw the exception now.
+            throw ex;
         }
-
-        /* create new object:
-         *
-         * {cnm: output, input:input}
-         *
-         */
-        JsonObject bigOutput = new JsonObject();
-        bigOutput.add("cnm", new JsonParser().parse(output).getAsJsonObject());
-        bigOutput.add("input", new JsonParser().parse(input).getAsJsonObject());
-
-        return new Gson().toJson(bigOutput);
     }
 
     Map<String, MessageAttribute> buildMessageAttributesHash(String collection_name, String dataVersion, String status) {

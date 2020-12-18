@@ -191,10 +191,10 @@ public class AppTest
         JsonElement jelement = new JsonParser().parse(input);
         JsonObject inputKey = jelement.getAsJsonObject();
         MessageAdapterException ex = new MessageAdapterException("Test exception.");
-        String output = cnmResponse.generateGeneralError(inputKey, ex.getMessage());
+        String output = cnmResponse.buildGeneralError(inputKey, ex.getMessage());
         JsonElement outputElement = new JsonParser().parse(output);
         JsonObject outputJson = outputElement.getAsJsonObject();
-        // check that we have the minimun acceptable json according to the schema
+        // check that we have the minimum acceptable json according to the schema
         String[] schemaFields = {"version", "provider", "collection", "submissionTime", "receivedTime", "identifier",
                 "response"};
         for (String field : schemaFields) {
