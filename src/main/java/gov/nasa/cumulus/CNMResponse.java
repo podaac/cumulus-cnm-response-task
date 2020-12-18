@@ -156,13 +156,19 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
         // but the FAILURE case, response does not include cmr data
         inputKey.add("response", response);
 
+        inputKey.addProperty("processCompleteTime", CNMResponse.getCompletionTimestamp());
+        return new Gson().toJson(inputKey);
+    }
+
+    /**
+     * Builds the completion timestamp using the current Time
+     * @return      the timestamp, properly formatted, as string
+     */
+    public static String getCompletionTimestamp() {
         TimeZone tz = TimeZone.getTimeZone("UTC");
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         df.setTimeZone(tz);
-        String nowAsISO = df.format(new Date());
-
-        inputKey.addProperty("processCompleteTime", nowAsISO);
-        return new Gson().toJson(inputKey);
+        return df.format(new Date());
     }
 
     public String getError(JsonObject input, String key) {
@@ -219,11 +225,7 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
         response.addProperty("errorMessage", cause);
         failureJson.add("response", response);
         // add the completion timestamp
-        TimeZone tz = TimeZone.getTimeZone("UTC");
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-        df.setTimeZone(tz);
-        String nowAsISO = df.format(new Date());
-        failureJson.addProperty("processCompleteTime", nowAsISO);
+        failureJson.addProperty("processCompleteTime", CNMResponse.getCompletionTimestamp());
         return new Gson().toJson(failureJson);
     }
 
