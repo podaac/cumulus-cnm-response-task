@@ -267,7 +267,7 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
                     .getAsJsonObject("OriginalCNM")
                     .get("collection").getAsString();
         } catch (Exception e) {
-            if (input.has("collection")) {
+            if (input.getAsJsonObject("input").has("collection")) {
                 return input.getAsJsonObject("collection").getAsString();
             } else {
                 return "Unknown/Missing";
