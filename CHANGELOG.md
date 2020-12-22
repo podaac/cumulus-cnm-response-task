@@ -17,8 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - **Snyk**
   - Upgrade com.amazonaws:aws-java-sdk-core:1.11.903 -> 1.11.922
-  - Upgrade com.amazonaws:aws-java-sdk-kinesis:1.11.903 -> 1.11.922
-  - Upgrade com.amazonaws:aws-java-sdk-sns:1.11.903 -> 1.11.922
+  - Upgrade com.amazonaws:aws-java-sdk-kinesis:1.11.903 -> 1.11.924
+  - Upgrade com.amazonaws:aws-java-sdk-sns:1.11.903 -> 1.11.924
     
 # [v1.2.0] - 2020-12-15
 ### Added
