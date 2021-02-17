@@ -4,7 +4,7 @@
 
   <groupId>gov.nasa.cumulus</groupId>
   <artifactId>cnm-response</artifactId>
-  <version>1.3.0</version>
+  <version>1.3.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>cnm-response</name>
@@ -27,7 +27,7 @@
 <dependency>
     <groupId>com.amazonaws</groupId>
     <artifactId>aws-java-sdk-core</artifactId>
-    <version>1.11.922</version>
+    <version>1.11.955</version>
 </dependency>
 <!-- https://mvnrepository.com/artifact/com.amazonaws/amazon-kinesis-client -->
 <dependency>
@@ -39,7 +39,7 @@
 <dependency>
     <groupId>com.amazonaws</groupId>
     <artifactId>aws-java-sdk-sns</artifactId>
-    <version>1.11.924</version>
+    <version>1.11.955</version>
 </dependency>
 <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
 <dependency>
@@ -56,7 +56,7 @@
 <dependency>
     <groupId>com.amazonaws</groupId>
     <artifactId>aws-java-sdk-kinesis</artifactId>
-    <version>1.11.924</version>
+    <version>1.11.955</version>
 </dependency>
 <dependency>
     <groupId>commons-io</groupId>
