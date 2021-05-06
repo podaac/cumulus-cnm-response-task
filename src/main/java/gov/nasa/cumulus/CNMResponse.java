@@ -9,7 +9,6 @@ import cumulus_message_adapter.message_parser.MessageAdapterException;
 import cumulus_message_adapter.message_parser.MessageParser;
 import gov.nasa.cumulus.bo.MessageAttribute;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 
@@ -145,10 +144,13 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
             inputKey.get("product").getAsJsonObject().remove("name");
             inputKey.get("product").getAsJsonObject().addProperty("name", granuleId);
 
-            JsonObject ingestionMetadata = new JsonObject();
-            ingestionMetadata.addProperty("catalogId", granule.get("cmrConceptId").getAsString());
-            ingestionMetadata.addProperty("catalogUrl", granule.get("cmrLink").getAsString());
-            response.add("ingestionMetadata", ingestionMetadata);
+            // Only add CMR metadata if available
+            if (granule.get("cmrConceptId") != null && granule.get("cmrLink") != null) {
+                JsonObject ingestionMetadata = new JsonObject();
+                ingestionMetadata.addProperty("catalogId", granule.get("cmrConceptId").getAsString());
+                ingestionMetadata.addProperty("catalogUrl", granule.get("cmrLink").getAsString());
+                response.add("ingestionMetadata", ingestionMetadata);
+            }
         } else {
             inputKey.remove("product");
         }
