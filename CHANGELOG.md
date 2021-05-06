@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [v1.4.0] - 2021-05-06
+### Added
+### Changed
+- **PCESA-2418**
+    - Updated CNMResponse task to not require cmrConceptId and cmrLink in granule input.
+### Deprecated
+### Removed
+### Fixed
+### Security
+- **Snyk**
+  - Upgrade com.amazonaws:aws-java-sdk-core:1.11.955 -> 1.11.1013
+  - Upgrade com.amazonaws:aws-java-sdk-kinesis:1.11.955 -> 1.11.1013
+  - Upgrade com.amazonaws:aws-java-sdk-sns:1.11.955 -> 1.11.1013
+  - Upgrade commons-io:commons-io:2.6 -> 2.7
+
 # [v1.3.1] - 2021-02-17
 ### Added
 ### Changed
