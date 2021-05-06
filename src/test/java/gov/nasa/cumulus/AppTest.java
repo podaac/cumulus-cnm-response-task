@@ -260,6 +260,36 @@ public class AppTest
 		assertEquals("https://cmr.uat.earthdata.nasa.gov/search/granules.json?concept_id=G1234313662-POCUMULUS", ingestionMetadata.get("catalogUrl").getAsString());
 	}
 
+	/**
+	 * Test success CNM response with no CMR link
+	 */
+	public void testSuccessCnmNoCmr() throws Exception {
+		ClassLoader classLoader = getClass().getClassLoader();
+		File inputJsonFile = new File(classLoader.getResource("workflow.success.no.cmr.json").getFile());
+
+		String input = "";
+		try {
+			input = new String(Files.readAllBytes(inputJsonFile.toPath()));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		JsonElement jelement = new JsonParser().parse(input);
+		JsonObject inputKey = jelement.getAsJsonObject();
+
+		JsonObject inputConfig = inputKey.getAsJsonObject("config");
+		String cnm = new Gson().toJson(inputConfig.get("OriginalCNM"));
+
+		JsonObject granule = inputKey.get("input").getAsJsonObject().get("granules").getAsJsonArray().get(0).getAsJsonObject();
+
+		String output = CNMResponse.generateOutput(cnm, null, granule, inputConfig);
+		JsonElement outputElement = new JsonParser().parse(output);
+		JsonObject response = outputElement.getAsJsonObject().get("response").getAsJsonObject();
+
+		JsonElement ingestionMetadata = response.get("ingestionMetadata");
+		assertNull(ingestionMetadata);
+	}
+
 	public void testBuildMessageAttributesHash() {
 		CNMResponse cnmResponse = new CNMResponse();
 		Map<String, MessageAttribute> attributeBOMap =  cnmResponse.buildMessageAttributesHash("JASON_C1", "E","SUCCESS");
