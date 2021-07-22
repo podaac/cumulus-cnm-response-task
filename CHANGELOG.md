@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [v1.4.1] - 2021-07-21
+### Added
+### Changed
+### Deprecated
+### Removed
+### Fixed
+### Security
+- **Snyk**
+  - Upgrade com.amazonaws:aws-java-sdk-core:1.11.1013 -> 1.12.28
+  - Upgrade com.amazonaws:aws-java-sdk-kinesis:1.11.1013 -> 1.12.28
+  - Upgrade com.amazonaws:aws-java-sdk-sns:1.11.1013 -> 1.12.28
+  - Upgrade com.amazonaws:amazon-kinesis-client:1.14.0 -> 1.14.4
+
 # [v1.4.0] - 2021-05-06
 ### Added
 ### Changed
