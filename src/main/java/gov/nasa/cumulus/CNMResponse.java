@@ -117,13 +117,14 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
                 f.addProperty("type", e.getAsJsonObject().getAsJsonPrimitive("type").getAsString());
                 // subtype : skip
                 // name
-                f.addProperty("name", e.getAsJsonObject().getAsJsonPrimitive("name").getAsString());
+                f.addProperty("fileName", e.getAsJsonObject().getAsJsonPrimitive("fileName").getAsString());
                 // uri
-                String filename = e.getAsJsonObject().getAsJsonPrimitive("filename").getAsString();
-                filename = filename.replace("s3://", "/");
+                String bucket = e.getAsJsonObject().getAsJsonPrimitive("bucket").getAsString();
+                String key = e.getAsJsonObject().getAsJsonPrimitive("key").getAsString();
+                String filepath = bucket + '/' + key;
                 try {
                     URIBuilder uriBuilder = new URIBuilder(distribute_url);
-                    f.addProperty("uri", uriBuilder.setPath(uriBuilder.getPath() + filename).build().normalize().toString());
+                    f.addProperty("uri", uriBuilder.setPath(uriBuilder.getPath() + filepath).build().normalize().toString());
                 } catch (URISyntaxException uriSyntaxException) {
                     throw uriSyntaxException;
                 }

@@ -5,26 +5,19 @@
                 "files": [
                     {
                         "checksumType": "md5",
-                        "name": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc",
-                        "filepath": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc",
-                        "checksumType": "md5",
+                        "fileName": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc",
+                        "key": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc",
                         "checksum": "3b6de83e361a01867a9e541a4bf771dc",
                         "bucket": "test-protected",
-                        "filename": "s3://test-protected/Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.nc",
-                        "path": "c1f1be11-9cbd-4620-ad07-9a7f2afb8349/store/merged_alt/open/L2/TP_J1_OSTM/cycles",
-                        "url_path": "",
                         "type": "data",
-                        "duplicate_found": true,
                         "size": 18795152
                     },
                     {
-                        "name": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.cmr.json",
-                        "filepath": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.cmr.json",
+                        "fileName": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.cmr.json",
+                        "key": "Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.cmr.json",
                         "checksumType": "md5",
                         "checksum": "11236de83e361eesss332f771dc",
                         "bucket": "test-public",
-                        "filename": "s3://test-public/Merged_TOPEX_Jason_OSTM_Jason-3_Cycle_945.V4_2.cmr.json",
-                        "url_path": "",
                         "type": "metadata",
                         "size": 1236
                     }
