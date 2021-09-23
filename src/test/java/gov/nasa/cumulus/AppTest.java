@@ -241,7 +241,6 @@ public class AppTest
 		JsonObject product = outputElement.getAsJsonObject().get("product").getAsJsonObject();
 		assertEquals("SUCCESS", response.get("status").getAsString());
 
-		System.out.println(product.get("name"));
 		assertEquals("1.0", product.get("dataVersion").getAsString());
 		assertEquals(2, product.get("files").getAsJsonArray().size());
 		JsonArray files = product.get("files").getAsJsonArray();
