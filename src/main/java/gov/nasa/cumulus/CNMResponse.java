@@ -117,7 +117,7 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
                 f.addProperty("type", e.getAsJsonObject().getAsJsonPrimitive("type").getAsString());
                 // subtype : skip
                 // name
-                f.addProperty("fileName", e.getAsJsonObject().getAsJsonPrimitive("fileName").getAsString());
+                f.addProperty("name", e.getAsJsonObject().getAsJsonPrimitive("fileName").getAsString());
                 // uri
                 String bucket = e.getAsJsonObject().getAsJsonPrimitive("bucket").getAsString();
                 String key = e.getAsJsonObject().getAsJsonPrimitive("key").getAsString();

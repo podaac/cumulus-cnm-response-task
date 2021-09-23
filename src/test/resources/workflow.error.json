@@ -6,6 +6,7 @@
                 "files": [
                     {
                         "fileName": "L1B_HR_SLC_product_0001-of-4154.h5",
+                        "key": "L1B_HR_SLC/L1B_HR_SLC_product_0001-of-4154.h5",
                         "bucket": "podaac-dev-cumulus-test-input",
                         "checksumType": "md5",
                         "checksum": "1mm36de83e32233s332f771dc",
