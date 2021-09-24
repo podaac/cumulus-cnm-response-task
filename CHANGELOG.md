@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [v2.0.0] - 2021-09-24
+### Added
+### Changed
+- **CUMULUS-2388**
+  - Updated CNMResponse task to use fileName, bucket and key from Cumulus granule files object.
+### Deprecated
+### Removed
+### Fixed
+### Security
+
 # [v1.4.1] - 2021-07-21
 ### Added
 ### Changed
