@@ -11,9 +11,6 @@ on:
 env:
   REGISTRY: ghcr.io
   ARTIFACT_BASE_NAME: cnmResponse
-  # Need to change owner back
-  UPLOAD_URL: https://api.github.com/repos/cbanh/cumulus-cnm-response-task
-  GITHUB_USER: cbanh
 
 jobs:
   # First job name
