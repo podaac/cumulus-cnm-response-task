@@ -15,9 +15,11 @@ import click
 # 1.2.3
 # 1.2.3+xy3z
 # 1.2.3-rc.1
+# 1.2.3-SNAPSHOT
 def bumpy(version:str, get_base):
     rc_reg = '.*rc\.\d+$'
     dev_reg = '.*alpha\.\d+.*'
+    snap_reg = '.*SNAPSHOT$'
 
     if re.match(rc_reg, version):        
         if get_base:
@@ -29,6 +31,8 @@ def bumpy(version:str, get_base):
             return print(version.split('-alpha')[0].strip())
         else:
             return print(int(version.split('-alpha.')[1].split('-')[0]) + 1)
+    elif re.match(snap_reg, version):
+            return print(version.split('-SNAPSHOT')[0].strip())
     else:
         if get_base:
             return print(version.strip())
