@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GIT_PUSH_TOKEN }}
       - uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
@@ -144,5 +146,5 @@ jobs:
         run: |
           git config --global user.name 'podaac-cloud-IandA'
           git config --global user.email 'podaac-cloud-IandA@jpl.nasa.gov'
-          git commit -m "/version ${{ env.software_version }}" pom.xml
+          git commit -m "/version ${{ env.software_version }} [skip actions]" pom.xml
           git push
