@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [v1.4.2] - 2021-12-15
+### Added
+### Changed
+### Deprecated
+### Removed
+### Fixed
+### Security
+- **PODAAC-4046**
+  - Upgrade to cumulus-message-adapter-java 1.3.5 to address log4j vulnerability
+
 # [v1.4.1] - 2021-07-21
 ### Added
 ### Changed
