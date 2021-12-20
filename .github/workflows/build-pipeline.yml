@@ -1,0 +1,150 @@
+name: Build
+
+on:
+  # Triggers the workflow on push events
+  push:
+    branches: [ develop, release/**, feature/**, master, main ]
+
+    # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  ARTIFACT_BASE_NAME: cnmResponse
+
+jobs:
+  # First job name
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GIT_PUSH_TOKEN }}
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '8.0.232'
+      - uses: gradle/gradle-build-action@v1
+        with:
+          gradle-version: 4.0.1
+      - name: Install Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install Python dependencies
+        run: |
+          pip3 install -r builder/requirements.txt
+      - name: Extract Maven project version
+        run: echo ::set-output name=current_version::$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
+        id: get-version
+      - name: Show extracted Maven project version
+        run: |
+          echo ${{ steps.get-version.outputs.current_version }}
+          base_ver="$(python3 builder/bump-version.py -v ${{ steps.get-version.outputs.current_version }} --get-base)"
+          echo "base_ver=$base_ver" >> $GITHUB_ENV
+      - name: Bump pre-alpha version
+        # If triggered by push to a feature branch
+        if: ${{ startsWith(github.ref, 'refs/heads/feature/') }}
+        run: |
+          git_sha="$(git rev-parse --short ${GITHUB_SHA})"          
+          echo "git sha=$git_sha"
+          new_ver="${base_ver}+$git_sha"
+          echo "software_version=$new_ver" >> $GITHUB_ENV
+      - name: Bump alpha version
+        # If triggered by push to the develop branch
+        if: ${{ github.ref == 'refs/heads/develop' }}
+        run: |
+          bump_ver="$(python3 builder/bump-version.py -v ${{ steps.get-version.outputs.current_version }})"
+          if [[ "$bump_ver" == "None" ]]; then
+            bump_ver='0'
+          fi
+          new_ver="${base_ver}-alpha.${bump_ver}-SNAPSHOT"
+          echo "software_version=$new_ver" >> $GITHUB_ENV
+      - name: Bump rc version
+        # If triggered by push to a release branch
+        if: ${{ startsWith(github.ref, 'refs/heads/release/') }}
+        run: |
+          bump_ver="$(python3 builder/bump-version.py -v ${{ steps.get-version.outputs.current_version }})"
+          if [[ "$bump_ver" == "None" ]]; then
+            bump_ver='0'
+          fi
+          new_ver="${base_ver}-rc.${bump_ver}"
+          echo "software_version=$new_ver" >> $GITHUB_ENV
+      - name: Release version
+        # If triggered by push to the master branch
+        if: ${{ startsWith(github.ref, 'refs/heads/master') }}
+        run: |
+          new_ver="${base_ver}"
+          echo "software_version=$new_ver" >> $GITHUB_ENV
+      - name: Build new version
+        run: |
+          echo "New Version is: ${{ env.software_version }}"
+          python3 builder/builder2.py -d . -a ${{env.ARTIFACT_BASE_NAME}} -v ${{ env.software_version }}
+      - name: Prepare Artifacts
+        run: |
+          artifact_file_name="${{ env.ARTIFACT_BASE_NAME }}-${{ env.software_version }}.zip"
+          echo "ARTIFACT_FILE=$artifact_file_name" >> $GITHUB_ENV
+          cp release/*.zip "$artifact_file_name"
+      - name: Create Release
+        id: create_release
+        if: ${{ contains(github.ref, 'master') }}
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: "v${{ env.software_version }}"
+          release_name: "Release v${{ env.software_version }} - ${{ github.ref }}"
+          body: |
+            Changes in this release:
+            ${{ github.event.head_commit.message }}
+          body_path: release.md
+          draft: false
+          prerelease: false
+      - name: Create PreRelease
+        id: create_prerelease
+        if: ${{ !contains(github.ref, 'master') }}
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: "v${{ env.software_version }}"
+          release_name: "Release v${{ env.software_version }} - ${{ github.ref }}"
+          body: |
+            Changes in this release:
+            ${{ github.event.head_commit.message }}
+          draft: false
+          prerelease: true
+      - name: Upload PreRelease Asset
+        id: upload-prerelease-asset 
+        if: ${{ !contains(github.ref, 'master') }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_prerelease.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          asset_path: "${{ env.ARTIFACT_FILE }}"
+          asset_name: "${{ env.ARTIFACT_FILE }}"
+          asset_content_type: application/zip
+      - name: Upload Release Asset
+        id: upload-release-asset
+        if: ${{ contains(github.ref, 'master') }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          asset_path: "${{ env.ARTIFACT_FILE }}"
+          asset_name: "${{ env.ARTIFACT_FILE }}"
+          asset_content_type: application/zip
+      - name: Commit Version Bump
+        # If building develop, a release branch, or master then we commit the version bump back to the repo
+        if: |
+          github.ref == 'refs/heads/develop' ||
+          github.ref == 'refs/heads/master'  ||
+          startsWith(github.ref, 'refs/heads/release')
+        run: |
+          git config --global user.name 'podaac-cloud-IandA'
+          git config --global user.email 'podaac-cloud-IandA@jpl.nasa.gov'
+          git commit -m "/version ${{ env.software_version }} [skip actions]" pom.xml
+          git push
