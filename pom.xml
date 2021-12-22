@@ -33,7 +33,7 @@
 <dependency>
     <groupId>com.amazonaws</groupId>
     <artifactId>amazon-kinesis-client</artifactId>
-    <version>1.14.4</version>
+    <version>1.14.7</version>
 </dependency>
 <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-sns -->
 <dependency>
