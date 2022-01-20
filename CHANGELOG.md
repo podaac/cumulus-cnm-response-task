@@ -14,7 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - **PODAAC-4055**
   - Upgrade dependencies to overcome Snyk warnings
-
+- **PODAAC-4095**
+  - Upgrade to cumulus-message-adapter 1.3.9
 
 # [v2.0.2] - 2021-12-22
 ### Added
