@@ -63,7 +63,7 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
             response.addProperty("status", "FAILURE");
 
             //logic for failure types here
-            JsonObject workflowException = new JsonParser().parse(exception).getAsJsonObject();
+            JsonObject workflowException = JsonParser.parseString(exception).getAsJsonObject();
 
             String error = workflowException.get("Error").getAsString();
             AdapterLogger.LogWarning(CNMResponse.class.getName() + " error:" + error);
