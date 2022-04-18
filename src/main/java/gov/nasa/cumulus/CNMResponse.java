@@ -12,6 +12,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -316,8 +317,11 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
         // convert the final output to a JsonObject, so we can get 'response status'
         JsonObject outputJsonObj = new JsonParser().parse(output).getAsJsonObject();
         String final_status = outputJsonObj.getAsJsonObject("response").get("status").getAsString();
+        String dataProcessingType = outputJsonObj.getAsJsonObject("product").has("dataProcessingType") ?
+                outputJsonObj.getAsJsonObject("product").get("dataProcessingType").getAsString() : null;
         if (method != null) {
-            Map<String, MessageAttribute> attributeBOMap = buildMessageAttributesHash(collection, dataVersion, final_status);
+            Map<String, MessageAttribute> attributeBOMap =
+                    buildMessageAttributesHash(collection, dataVersion, final_status, dataProcessingType);
             Sender sender = SenderFactory.getSender(region, method);
             sender.addMessageAttributes(attributeBOMap);
             if (endpoint.isJsonArray()) {
@@ -367,20 +371,36 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
         }
     }
 
-    Map<String, MessageAttribute> buildMessageAttributesHash(String collection_name, String dataVersion, String status) {
+    Map<String, MessageAttribute> buildMessageAttributesHash(
+            String collection_name,
+            String dataVersion,
+            String status,
+            @Nullable String dataProcessingType
+    ) {
         Map<String, MessageAttribute> attributeBOMap = new HashMap<>();
+
         MessageAttribute collectionNameBO = new MessageAttribute();
         collectionNameBO.setType(MessageFilterTypeEnum.String);
         collectionNameBO.setValue(collection_name);
         attributeBOMap.put(this.COLLECTION_SHORT_NAME_ATTRIBUTE_KEY, collectionNameBO);
+
         MessageAttribute statusBO = new MessageAttribute();
         statusBO.setType(MessageFilterTypeEnum.String);
         statusBO.setValue(status);
         attributeBOMap.put(this.CNM_RESPONSE_STATUS_ATTRIBUTE_KEY, statusBO);
+
         MessageAttribute dataVersionBO = new MessageAttribute();
         dataVersionBO.setType(MessageFilterTypeEnum.String);
         dataVersionBO.setValue(dataVersion);
         attributeBOMap.put(this.DATA_VERSION_ATTRIBUTE_KEY, dataVersionBO);
+
+        if(null != dataProcessingType && !dataProcessingType.isEmpty()){
+            MessageAttribute dataProcessingTypeBO = new MessageAttribute();
+            dataProcessingTypeBO.setType(MessageFilterTypeEnum.String);
+            dataProcessingTypeBO.setValue(dataProcessingType);
+            attributeBOMap.put(this.DATA_PROCESSING_TYPE, dataProcessingTypeBO);
+        }
+
         return attributeBOMap;
     }
 }
