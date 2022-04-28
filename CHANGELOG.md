@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [v1.5.0] - 2022-04-28
+### Added
+- **PODAAC-4445**
+  - Add in new field `dataProcessingType` in the `MessageAttributes` section for SNS topics; would only populate when field existsq
+### Changed
+### Deprecated
+### Removed
+### Fixed
+### Security
+- **Snyk**
+  - Upgrade com.amazonaws:aws-java-sdk-core@1.12.144 to com.amazonaws:aws-java-sdk-core@1.12.201
+  - Upgrade com.amazonaws:amazon-kinesis-client@1.14.7 to com.amazonaws:amazon-kinesis-client@1.14.8
+
 # [v1.4.4] - 2021-01-21
 ### Added
 ### Changed
