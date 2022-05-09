@@ -7,6 +7,7 @@ public interface IConstants {
     String COLLECTION_SHORT_NAME_ATTRIBUTE_KEY = "COLLECTION";
     String CNM_RESPONSE_STATUS_ATTRIBUTE_KEY = "CNM_RESPONSE_STATUS";
     String DATA_VERSION_ATTRIBUTE_KEY = "DATA_VERSION";
+    String DATA_PROCESSING_TYPE = "dataProcessingType";
     enum MessageFilterTypeEnum {
         String,
         Number
