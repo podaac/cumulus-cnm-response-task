@@ -295,7 +295,7 @@ public class AppTest
 
 	public void testBuildMessageAttributesHash() {
 		CNMResponse cnmResponse = new CNMResponse();
-		Map<String, MessageAttribute> attributeBOMap =  cnmResponse.buildMessageAttributesHash("JASON_C1", "E","SUCCESS");
+		Map<String, MessageAttribute> attributeBOMap =  cnmResponse.buildMessageAttributesHash("JASON_C1", "E","SUCCESS", "forward");
 		MessageAttribute collectionBO = attributeBOMap.get(this.COLLECTION_SHORT_NAME_ATTRIBUTE_KEY);
 		MessageAttribute statusBO = attributeBOMap.get(this.CNM_RESPONSE_STATUS_ATTRIBUTE_KEY);
 		MessageAttribute dataVersionBO = attributeBOMap.get(this.DATA_VERSION_ATTRIBUTE_KEY);

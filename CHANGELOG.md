@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Unreleased] 
 ### Added
+- **PODAAC-4445**
+  - Add in new field `dataProcessingType` in the `MessageAttributes` section for SNS topics; would only populate when field exists
 ### Changed
 ### Deprecated
 ### Removed
