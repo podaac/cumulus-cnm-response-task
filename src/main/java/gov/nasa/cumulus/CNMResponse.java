@@ -317,8 +317,11 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
         // convert the final output to a JsonObject, so we can get 'response status'
         JsonObject outputJsonObj = new JsonParser().parse(output).getAsJsonObject();
         String final_status = outputJsonObj.getAsJsonObject("response").get("status").getAsString();
-        String dataProcessingType = outputJsonObj.getAsJsonObject("product").has("dataProcessingType") ?
-                outputJsonObj.getAsJsonObject("product").get("dataProcessingType").getAsString() : null;
+        // If it doesn't have a product don't send it either...
+        String dataProcessingType = null;
+        if(outputJsonObj.has("product") && outputJsonObj.getAsJsonObject("product").has("dataProcessingType")) {
+            dataProcessingType = outputJsonObj.getAsJsonObject("product").get("dataProcessingType").getAsString();
+        }
         if (method != null) {
             Map<String, MessageAttribute> attributeBOMap =
                     buildMessageAttributesHash(collection, dataVersion, final_status, dataProcessingType);
