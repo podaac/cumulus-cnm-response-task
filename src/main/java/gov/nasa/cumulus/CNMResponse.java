@@ -233,6 +233,34 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
     }
 
     /**
+     * Gets the value for the 'dataProcessingType' field, to be used
+     * by the 'buildMessageAttributesHash' method.
+     * <br><br>
+     * Tries to use the 'OriginalCNM > Product > dataProcessingType' from the
+     * 'input > config' section, of the provided Json, but in case of an error,
+     * return a generic error string.
+     *<br><br>
+     * @param input     the input > config section, as a JsonObject
+     * @return          the string to use as the 'dataVersion' value
+     */
+    public String getDataProcessingType(JsonObject input) {
+        String dataProcessingType = null;
+        // Implement a recursive json search function (find "dataProcessingType" else)
+        try {
+            if(input.has("OriginalCNM") &&
+                    input.getAsJsonObject("OriginalCNM").has("product") &&
+                    input.getAsJsonObject("OriginalCNM").getAsJsonObject("product").has("dataProcessingType")) {
+                dataProcessingType = input.getAsJsonObject("product").get("dataProcessingType").getAsString();
+            }
+            return dataProcessingType;
+        } catch (Exception e) {
+            AdapterLogger.LogError(this.className + " handleRequest error:\n" + e.getMessage());
+            AdapterLogger.LogInfo("input content:\n" + input);
+            return "Unknown/Missing";
+        }
+    }
+
+    /**
      * Gets the value for the 'DataVersion' field, to be used
      * by the 'buildMessageAttributesHash' method.
      * <br><br>
@@ -304,24 +332,20 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
      * using the 'response > status' field from the 'output'
      * along with the provided values for 'collection' and 'dataversion'
      * <br><br>
-     * @param output        the final output json message, as String
-     * @param method        the method to use, 'Kinesis' or 'Sns' when sending
-     * @param region        the region to send the message to
-     * @param endpoint      the actual endpoint for the message
-     * @param collection    the collection value for the attribute hash
-     * @param dataVersion   the dataVersion value for the attribute hash
+     * @param output             the final output json message, as String
+     * @param method             the method to use, 'Kinesis' or 'Sns' when sending
+     * @param region             the region to send the message to
+     * @param endpoint           the actual endpoint for the message
+     * @param collection         the collection value for the attribute hash
+     * @param dataVersion        the dataVersion value for the attribute hash
+     * @oaram dataProcessingType the dataProcessingType value for the attribute hash (can be null)
      */
     public void sendMessage(String output, String method, String region,
                                    JsonElement endpoint, String collection,
-                                   String dataVersion) {
+                                   String dataVersion, @Nullable String dataProcessingType) {
         // convert the final output to a JsonObject, so we can get 'response status'
         JsonObject outputJsonObj = new JsonParser().parse(output).getAsJsonObject();
         String final_status = outputJsonObj.getAsJsonObject("response").get("status").getAsString();
-        // If it doesn't have a product don't send it either...
-        String dataProcessingType = null;
-        if(outputJsonObj.has("product") && outputJsonObj.getAsJsonObject("product").has("dataProcessingType")) {
-            dataProcessingType = outputJsonObj.getAsJsonObject("product").get("dataProcessingType").getAsString();
-        }
         if (method != null) {
             Map<String, MessageAttribute> attributeBOMap =
                     buildMessageAttributesHash(collection, dataVersion, final_status, dataProcessingType);
@@ -352,10 +376,11 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
         // get collection and dataVersion for use in message attribute hash
         String collection = getCollection(inputKey);
         String dataVersion = getDataVersion(inputConfig);
+        String dataProcessingType = getDataProcessingType(inputKey);
         String output;
         try {
             output = buildMessage(inputKey, inputConfig);
-            sendMessage(output, method, region, responseEndpoint, collection, dataVersion);
+            sendMessage(output, method, region, responseEndpoint, collection, dataVersion, dataProcessingType);
             /* create new object:
              *
              * {cnm: output, input:input}
@@ -367,8 +392,9 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
             return new Gson().toJson(bigOutput);
         } catch (Exception ex) {
             AdapterLogger.LogError(this.className + " encountered exception with input String: " + input);
+            AdapterLogger.LogError(this.className + " handleRequest error:" + ex.getMessage());
             output = buildGeneralError(inputKey, ex.getMessage());
-            sendMessage(output, method, region, responseEndpoint, collection, dataVersion);
+            sendMessage(output, method, region, responseEndpoint, collection, dataVersion, dataProcessingType);
             // re-throw the exception now.
             throw ex;
         }
