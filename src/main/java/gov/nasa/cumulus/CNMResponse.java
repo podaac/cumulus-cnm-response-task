@@ -376,7 +376,7 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
         // get collection and dataVersion for use in message attribute hash
         String collection = getCollection(inputKey);
         String dataVersion = getDataVersion(inputConfig);
-        String dataProcessingType = getDataProcessingType(inputKey);
+        String dataProcessingType = getDataProcessingType(inputConfig);
         String output;
         try {
             output = buildMessage(inputKey, inputConfig);
