@@ -244,9 +244,6 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
      * @return          the string to use as the 'dataProcessingType' value; null if not available
      */
     public String getDataProcessingType(JsonObject input) {
-
-        AdapterLogger.LogInfo("input content:\n" + input);
-
         String dataProcessingType = null;
         // Implement a recursive json search function (find "dataProcessingType" else)
         try {
