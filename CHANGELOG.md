@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [v1.5.1] - 2022-05-19
+### Added
+### Changed
+### Deprecated
+### Removed
+### Fixed
+### Added
+- **PODAAC-4574**
+  - fixed issue where when `product` is missing a null pointer exception happens
+### Security
+- **Snyk**
+  - Upgrade com.google.code.gson:gson@2.8.9 to com.google.code.gson:gson@2.9.0
+
 # [v1.5.0] - 2022-04-28
 ### Added
 - **PODAAC-4445**
