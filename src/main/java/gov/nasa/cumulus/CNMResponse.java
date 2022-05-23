@@ -241,7 +241,7 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
      * return a generic error string.
      *<br><br>
      * @param input     the input > config section, as a JsonObject
-     * @return          the string to use as the 'dataVersion' value
+     * @return          the string to use as the 'dataProcessingType' value; null if not available
      */
     public String getDataProcessingType(JsonObject input) {
         String dataProcessingType = null;
@@ -250,13 +250,13 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
             if(input.has("OriginalCNM") &&
                     input.getAsJsonObject("OriginalCNM").has("product") &&
                     input.getAsJsonObject("OriginalCNM").getAsJsonObject("product").has("dataProcessingType")) {
-                dataProcessingType = input.getAsJsonObject("product").get("dataProcessingType").getAsString();
+                dataProcessingType = input.getAsJsonObject("OriginalCNM").getAsJsonObject("product").get("dataProcessingType").getAsString();
             }
             return dataProcessingType;
         } catch (Exception e) {
             AdapterLogger.LogError(this.className + " handleRequest error:\n" + e.getMessage());
             AdapterLogger.LogInfo("input content:\n" + input);
-            return "Unknown/Missing";
+            return null;
         }
     }
 
