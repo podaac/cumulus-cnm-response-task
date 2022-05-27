@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Unreleased] 
 ### Added
-- **PODAAC-4445**
+- **PODAAC-4445 & PODAAC-4574**
   - Add in new field `dataProcessingType` in the `MessageAttributes` section for SNS topics; would only populate when field exists
 ### Changed
 ### Deprecated
@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - com.amazonaws:aws-java-sdk-sns@1.12.144 to com.amazonaws:aws-java-sdk-sns@1.12.209
   - com.amazonaws:aws-java-sdk-kinesis@1.12.144 to com.amazonaws:aws-java-sdk-kinesis@1.12.209
   - com.amazonaws:aws-lambda-java-core@1.1.0 to com.amazonaws:aws-lambda-java-core@1.2.1
+  - com.google.code.gson:gson@2.8.9 to com.google.code.gson:gson@2.9.0
 
 # [v2.0.3] - 2022-01-21
 ### Added
