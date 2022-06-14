@@ -5,13 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [v1.5.2] - 2022-06-13
+### Added
+- **PODAAC-4606**
+  - Add in new field `trace` in the `MessageAttributes` section for SNS topics; would only populate when field exists
+### Changed
+### Deprecated
+### Removed
+### Fixed
+### Security
+
 # [v1.5.1] - 2022-05-19
 ### Added
 ### Changed
 ### Deprecated
 ### Removed
 ### Fixed
-### Added
 - **PODAAC-4574**
   - fixed issue where when `product` is missing a null pointer exception happens
 ### Security
