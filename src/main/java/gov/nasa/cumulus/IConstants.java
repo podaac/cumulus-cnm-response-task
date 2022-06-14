@@ -8,6 +8,7 @@ public interface IConstants {
     String CNM_RESPONSE_STATUS_ATTRIBUTE_KEY = "CNM_RESPONSE_STATUS";
     String DATA_VERSION_ATTRIBUTE_KEY = "DATA_VERSION";
     String DATA_PROCESSING_TYPE = "dataProcessingType";
+    String TRACE = "trace";
     enum MessageFilterTypeEnum {
         String,
         Number

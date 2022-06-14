@@ -260,6 +260,22 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
         }
     }
 
+    public String getTrace(JsonObject input) {
+        String trace = null;
+        // Implement a recursive json search function (find "trace" else)
+        try {
+            if(input.has("OriginalCNM") &&
+                    input.getAsJsonObject("OriginalCNM").has("trace")) {
+                trace = input.getAsJsonObject("OriginalCNM").get("trace").getAsString();
+            }
+            return trace;
+        } catch (Exception e) {
+            AdapterLogger.LogError(this.className + " handleRequest error:\n" + e.getMessage());
+            AdapterLogger.LogInfo("input content:\n" + input);
+            return null;
+        }
+    }
+
     /**
      * Gets the value for the 'DataVersion' field, to be used
      * by the 'buildMessageAttributesHash' method.
@@ -342,13 +358,13 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
      */
     public void sendMessage(String output, String method, String region,
                                    JsonElement endpoint, String collection,
-                                   String dataVersion, @Nullable String dataProcessingType) {
+                                   String dataVersion, @Nullable String dataProcessingType, @Nullable String trace) {
         // convert the final output to a JsonObject, so we can get 'response status'
         JsonObject outputJsonObj = new JsonParser().parse(output).getAsJsonObject();
         String final_status = outputJsonObj.getAsJsonObject("response").get("status").getAsString();
         if (method != null) {
             Map<String, MessageAttribute> attributeBOMap =
-                    buildMessageAttributesHash(collection, dataVersion, final_status, dataProcessingType);
+                    buildMessageAttributesHash(collection, dataVersion, final_status, dataProcessingType, trace);
             Sender sender = SenderFactory.getSender(region, method);
             sender.addMessageAttributes(attributeBOMap);
             if (endpoint.isJsonArray()) {
@@ -377,10 +393,11 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
         String collection = getCollection(inputKey);
         String dataVersion = getDataVersion(inputConfig);
         String dataProcessingType = getDataProcessingType(inputConfig);
+        String trace = getTrace(inputConfig);
         String output;
         try {
             output = buildMessage(inputKey, inputConfig);
-            sendMessage(output, method, region, responseEndpoint, collection, dataVersion, dataProcessingType);
+            sendMessage(output, method, region, responseEndpoint, collection, dataVersion, dataProcessingType, trace);
             /* create new object:
              *
              * {cnm: output, input:input}
@@ -394,7 +411,7 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
             AdapterLogger.LogError(this.className + " encountered exception with input String: " + input);
             AdapterLogger.LogError(this.className + " handleRequest error:" + ex.getMessage());
             output = buildGeneralError(inputKey, ex.getMessage());
-            sendMessage(output, method, region, responseEndpoint, collection, dataVersion, dataProcessingType);
+            sendMessage(output, method, region, responseEndpoint, collection, dataVersion, dataProcessingType, trace);
             // re-throw the exception now.
             throw ex;
         }
@@ -404,7 +421,8 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
             String collection_name,
             String dataVersion,
             String status,
-            @Nullable String dataProcessingType
+            @Nullable String dataProcessingType,
+            @Nullable String trace
     ) {
         Map<String, MessageAttribute> attributeBOMap = new HashMap<>();
 
@@ -428,6 +446,13 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
             dataProcessingTypeBO.setType(MessageFilterTypeEnum.String);
             dataProcessingTypeBO.setValue(dataProcessingType);
             attributeBOMap.put(this.DATA_PROCESSING_TYPE, dataProcessingTypeBO);
+        }
+
+        if(null != trace && !trace.isEmpty()){
+            MessageAttribute traceBO = new MessageAttribute();
+            traceBO.setType(MessageFilterTypeEnum.String);
+            traceBO.setValue(trace);
+            attributeBOMap.put(this.TRACE, traceBO);
         }
 
         return attributeBOMap;
