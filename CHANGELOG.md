@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **PODAAC-4445 & PODAAC-4574**
   - Add in new field `dataProcessingType` in the `MessageAttributes` section for SNS topics; would only populate when field exists
+- **PODAAC-4606**
+  - Add in new field `trace` in the `MessageAttributes` section for SNS topics; would only populate when field exists
 ### Changed
 ### Deprecated
 ### Removed

@@ -295,16 +295,26 @@ public class AppTest
 
 	public void testBuildMessageAttributesHash() {
 		CNMResponse cnmResponse = new CNMResponse();
-		Map<String, MessageAttribute> attributeBOMap =  cnmResponse.buildMessageAttributesHash("JASON_C1", "E","SUCCESS", "forward");
-		MessageAttribute collectionBO = attributeBOMap.get(this.COLLECTION_SHORT_NAME_ATTRIBUTE_KEY);
+		Map<String, MessageAttribute> attributeBOMap =  cnmResponse.buildMessageAttributesHash(
+				"JASON_C1",
+				"E",
+				"SUCCESS",
+				"forward",
+				"NCMODIS_A-JPL-L2P-v2019.01");		MessageAttribute collectionBO = attributeBOMap.get(this.COLLECTION_SHORT_NAME_ATTRIBUTE_KEY);
 		MessageAttribute statusBO = attributeBOMap.get(this.CNM_RESPONSE_STATUS_ATTRIBUTE_KEY);
 		MessageAttribute dataVersionBO = attributeBOMap.get(this.DATA_VERSION_ATTRIBUTE_KEY);
+		MessageAttribute dataProcessingTypeBO = attributeBOMap.get(this.DATA_PROCESSING_TYPE);
+		MessageAttribute traceBO = attributeBOMap.get(this.TRACE);
 		assertEquals(MessageFilterTypeEnum.String, collectionBO.getType());
 		assertEquals("JASON_C1", collectionBO.getValue());
 		assertEquals(MessageFilterTypeEnum.String, statusBO.getType());
 		assertEquals("SUCCESS", statusBO.getValue());
 		assertEquals(MessageFilterTypeEnum.String, dataVersionBO.getType());
 		assertEquals("E", dataVersionBO.getValue());
+		assertEquals(MessageFilterTypeEnum.String, dataProcessingTypeBO.getType());
+		assertEquals("forward", dataProcessingTypeBO.getValue());
+		assertEquals(MessageFilterTypeEnum.String, traceBO.getType());
+		assertEquals("NCMODIS_A-JPL-L2P-v2019.01", traceBO.getValue());
 	}
 
 	/**
@@ -463,6 +473,150 @@ public class AppTest
 		JsonElement jelement = new JsonParser().parse(input);
 		JsonObject inputKey = jelement.getAsJsonObject();
 		String returnValue = cnmResponse.getDataProcessingType(inputKey);
+
+		assertNull(returnValue);
+	}
+
+	public void test_getTrace_success() throws  Exception{
+		CNMResponse cnmResponse = new CNMResponse();
+
+		String input = "{\n" +
+				"    \"OriginalCNM\": {\n" +
+				"        \"version\": \"1.5\",\n" +
+				"        \"provider\": \"PODAAC\",\n" +
+				"        \"submissionTime\": \"2020-11-10T18:27:13.988143\",\n" +
+				"        \"collection\": \"MODIS_A-JPL-L2P-v2019.0\",\n" +
+				"        \"identifier\": \"5abb6308-2382-11eb-9c5b-acde48001122\",\n" +
+				"        \"trace\": \"NCMODIS_A-JPL-L2P-v2019.01\",\n" +
+				"        \"product\": {\n" +
+				"            \"name\": \"20200101232501-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0\",\n" +
+				"            \"dataVersion\": \"2019.0\",\n" +
+				"            \"dataProcessingType\": \"forward\",\n" +
+				"            \"files\": [\n" +
+				"                {\n" +
+				"                    \"type\": \"data\",\n" +
+				"                    \"uri\": \"s3://podaac-dev-cumulus-test-input-v2/MODIS_A-JPL-L2P-v2019.0/2020/001/20200101232501-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc\",\n" +
+				"                    \"name\": \"20200101232501-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc\",\n" +
+				"                    \"checksumType\": \"md5\",\n" +
+				"                    \"size\": 22015385.0\n" +
+				"                },\n" +
+				"                {\n" +
+				"                    \"type\": \"metadata\",\n" +
+				"                    \"uri\": \"s3://podaac-dev-cumulus-test-input-v2/MODIS_A-JPL-L2P-v2019.0/2020/001/20200101232501-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc.md5\",\n" +
+				"                    \"name\": \"20200101232501-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc.md5\",\n" +
+				"                    \"size\": 98.0\n" +
+				"                }\n" +
+				"            ]\n" +
+				"        },\n" +
+				"        \"receivedTime\": \"2022-05-23T15:17:08.347Z\"\n" +
+				"    },\n" +
+				"    \"distribution_endpoint\": \"https://jh72u371y2.execute-api.us-west-2.amazonaws.com:9000/DEV/\",\n" +
+				"    \"type\": \"sns\",\n" +
+				"    \"response-endpoint\": [\n" +
+				"        \"arn:aws:sns:us-west-2:065089468788:hryeung-ia-podaac-provider-response-sns\"\n" +
+				"    ],\n" +
+				"    \"region\": \"us-west-2\",\n" +
+				"    \"WorkflowException\": \"None\"\n" +
+				"}";
+
+		JsonElement jelement = new JsonParser().parse(input);
+		JsonObject inputKey = jelement.getAsJsonObject();
+		String returnValue = cnmResponse.getTrace(inputKey);
+
+		assertEquals(returnValue, "NCMODIS_A-JPL-L2P-v2019.01");
+	}
+
+	public void test_getTrace_key_not_exist() throws  Exception{
+		CNMResponse cnmResponse = new CNMResponse();
+
+		String input = "{\n" +
+				"    \"OriginalCNM\": {\n" +
+				"        \"version\": \"1.5\",\n" +
+				"        \"provider\": \"PODAAC\",\n" +
+				"        \"submissionTime\": \"2020-11-10T18:27:13.988143\",\n" +
+				"        \"collection\": \"MODIS_A-JPL-L2P-v2019.0\",\n" +
+				"        \"identifier\": \"5abb6308-2382-11eb-9c5b-acde48001122\",\n" +
+				"        \"product\": {\n" +
+				"            \"name\": \"20200101232501-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0\",\n" +
+				"            \"dataVersion\": \"2019.0\",\n" +
+				"            \"files\": [\n" +
+				"                {\n" +
+				"                    \"type\": \"data\",\n" +
+				"                    \"uri\": \"s3://podaac-dev-cumulus-test-input-v2/MODIS_A-JPL-L2P-v2019.0/2020/001/20200101232501-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc\",\n" +
+				"                    \"name\": \"20200101232501-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc\",\n" +
+				"                    \"checksumType\": \"md5\",\n" +
+				"                    \"size\": 22015385.0\n" +
+				"                },\n" +
+				"                {\n" +
+				"                    \"type\": \"metadata\",\n" +
+				"                    \"uri\": \"s3://podaac-dev-cumulus-test-input-v2/MODIS_A-JPL-L2P-v2019.0/2020/001/20200101232501-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc.md5\",\n" +
+				"                    \"name\": \"20200101232501-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc.md5\",\n" +
+				"                    \"size\": 98.0\n" +
+				"                }\n" +
+				"            ]\n" +
+				"        },\n" +
+				"        \"receivedTime\": \"2022-05-23T15:17:08.347Z\"\n" +
+				"    },\n" +
+				"    \"distribution_endpoint\": \"https://jh72u371y2.execute-api.us-west-2.amazonaws.com:9000/DEV/\",\n" +
+				"    \"type\": \"sns\",\n" +
+				"    \"response-endpoint\": [\n" +
+				"        \"arn:aws:sns:us-west-2:065089468788:hryeung-ia-podaac-provider-response-sns\"\n" +
+				"    ],\n" +
+				"    \"region\": \"us-west-2\",\n" +
+				"    \"WorkflowException\": \"None\"\n" +
+				"}";
+
+		JsonElement jelement = new JsonParser().parse(input);
+		JsonObject inputKey = jelement.getAsJsonObject();
+		String returnValue = cnmResponse.getTrace(inputKey);
+
+		assertNull(returnValue);
+	}
+
+	public void test_getTrace_value_null() throws  Exception{
+		CNMResponse cnmResponse = new CNMResponse();
+
+		String input = "{\n" +
+				"    \"OriginalCNM\": {\n" +
+				"        \"version\": \"1.5\",\n" +
+				"        \"provider\": \"PODAAC\",\n" +
+				"        \"submissionTime\": \"2020-11-10T18:27:13.988143\",\n" +
+				"        \"collection\": \"MODIS_A-JPL-L2P-v2019.0\",\n" +
+				"        \"identifier\": \"5abb6308-2382-11eb-9c5b-acde48001122\",\n" +
+				"        \"trace\": null,\n" +
+				"        \"product\": {\n" +
+				"            \"name\": \"20200101232501-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0\",\n" +
+				"            \"dataVersion\": \"2019.0\",\n" +
+				"            \"files\": [\n" +
+				"                {\n" +
+				"                    \"type\": \"data\",\n" +
+				"                    \"uri\": \"s3://podaac-dev-cumulus-test-input-v2/MODIS_A-JPL-L2P-v2019.0/2020/001/20200101232501-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc\",\n" +
+				"                    \"name\": \"20200101232501-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc\",\n" +
+				"                    \"checksumType\": \"md5\",\n" +
+				"                    \"size\": 22015385.0\n" +
+				"                },\n" +
+				"                {\n" +
+				"                    \"type\": \"metadata\",\n" +
+				"                    \"uri\": \"s3://podaac-dev-cumulus-test-input-v2/MODIS_A-JPL-L2P-v2019.0/2020/001/20200101232501-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc.md5\",\n" +
+				"                    \"name\": \"20200101232501-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc.md5\",\n" +
+				"                    \"size\": 98.0\n" +
+				"                }\n" +
+				"            ]\n" +
+				"        },\n" +
+				"        \"receivedTime\": \"2022-05-23T15:17:08.347Z\"\n" +
+				"    },\n" +
+				"    \"distribution_endpoint\": \"https://jh72u371y2.execute-api.us-west-2.amazonaws.com:9000/DEV/\",\n" +
+				"    \"type\": \"sns\",\n" +
+				"    \"response-endpoint\": [\n" +
+				"        \"arn:aws:sns:us-west-2:065089468788:hryeung-ia-podaac-provider-response-sns\"\n" +
+				"    ],\n" +
+				"    \"region\": \"us-west-2\",\n" +
+				"    \"WorkflowException\": \"None\"\n" +
+				"}";
+
+		JsonElement jelement = new JsonParser().parse(input);
+		JsonObject inputKey = jelement.getAsJsonObject();
+		String returnValue = cnmResponse.getTrace(inputKey);
 
 		assertNull(returnValue);
 	}
