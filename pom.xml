@@ -39,7 +39,7 @@
 <dependency>
     <groupId>com.amazonaws</groupId>
     <artifactId>aws-java-sdk-sns</artifactId>
-    <version>1.12.209</version>
+    <version>1.12.320</version>
 </dependency>
 <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
 <dependency>
