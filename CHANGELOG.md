@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-# [Unreleased] 
+# [2.1.0] 
 ### Added
 - **PODAAC-4445 & PODAAC-4574**
   - Add in new field `dataProcessingType` in the `MessageAttributes` section for SNS topics; would only populate when field exists
