@@ -27,7 +27,7 @@
 <dependency>
     <groupId>com.amazonaws</groupId>
     <artifactId>aws-java-sdk-core</artifactId>
-    <version>1.12.209</version>
+    <version>1.12.376</version>
 </dependency>
 <!-- https://mvnrepository.com/artifact/com.amazonaws/amazon-kinesis-client -->
 <dependency>
