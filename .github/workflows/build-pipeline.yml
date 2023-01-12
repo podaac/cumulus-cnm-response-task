@@ -44,7 +44,7 @@ jobs:
           base_ver="$(python3 builder/bump-version.py -v ${{ steps.get-version.outputs.current_version }} --get-base)"
           echo "base_ver=$base_ver" >> $GITHUB_ENV
       - name: Run Snyk as a blocking step
-        uses: snyk/actions/gracle-jdk17@master
+        uses: snyk/actions/gradle-jdk17@master
         env:
             SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
