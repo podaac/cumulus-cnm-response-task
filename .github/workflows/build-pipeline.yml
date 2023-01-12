@@ -54,6 +54,7 @@ jobs:
               --project-name=${{ github.repository }}
               --severity-threshold=high
               --fail-on=all
+              --file=pom.xml
       - name: Bump pre-alpha version
         # If triggered by push to a feature branch
         if: ${{ startsWith(github.ref, 'refs/heads/feature/') }}
