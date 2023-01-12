@@ -43,6 +43,17 @@ jobs:
           echo ${{ steps.get-version.outputs.current_version }}
           base_ver="$(python3 builder/bump-version.py -v ${{ steps.get-version.outputs.current_version }} --get-base)"
           echo "base_ver=$base_ver" >> $GITHUB_ENV
+      - name: Run Snyk as a blocking step
+        uses: snyk/actions/python-3.8@master
+        env:
+            SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          command: test
+          args: >
+              --org=${{ secrets.SNYK_ORG_ID }}
+              --project-name=${{ github.repository }}
+              --severity-threshold=high
+              --fail-on=all
       - name: Bump pre-alpha version
         # If triggered by push to a feature branch
         if: ${{ startsWith(github.ref, 'refs/heads/feature/') }}
