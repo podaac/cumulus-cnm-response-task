@@ -1,9 +1,17 @@
-# [v2.0.2] - 2021-12-22
+# [v2.0.3] - 2022-01-21
 ### Added
 ### Changed
 ### Deprecated
 ### Removed
 ### Fixed
 ### Security
-- **PODAAC-4059**
-  - Upgrade to cumulus-message-adapter-java 1.3.7 to address [log4j vulnerability](https://nvd.nist.gov/vuln/detail/CVE-2021-45105)
+- **PODAAC-4055**
+  - Upgrade dependencies to overcome Snyk warnings
+  - Upgrade com.amazonaws:aws-java-sdk-core@1.12.28 to com.amazonaws:aws-java-sdk-core@1.12.144
+  - Upgrade com.amazonaws:aws-java-sdk-sns@1.12.28 to com.amazonaws:aws-java-sdk-sns@1.12.144
+  - Upgrade com.amazonaws:aws-java-sdk-kinesis@1.12.28 to com.amazonaws:aws-java-sdk-kinesis@1.12.144
+  - Upgrade com.amazonaws:amazon-kinesis-client@1.14.4 to com.amazonaws:amazon-kinesis-client@1.14.7
+  - Upgrade com.google.code.gson:gson@2.8.2 to com.google.code.gson:gson@2.8.9
+  - Upgrade commons-io@2.7 to commons-io@2.11.0
+- **PODAAC-4095**
+  - Upgrade to cumulus-message-adapter 1.3.9
