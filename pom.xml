@@ -1,84 +1,152 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-  <groupId>gov.nasa.cumulus</groupId>
-  <artifactId>cnm-response</artifactId>
-  <version>2.1.1-alpha.1-SNAPSHOT</version>
-  <packaging>jar</packaging>
+    <groupId>gov.nasa.cumulus</groupId>
+    <artifactId>cnm-response</artifactId>
+    <version>2.1.1-alpha.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
 
-  <name>cnm-response</name>
-  <url>http://maven.apache.org</url>
+    <name>cnm-response</name>
+    <url>http://maven.apache.org</url>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
-  <repositories>
-    <repository>
-      <id>clojars.org</id>
-      <url>https://repo.clojars.org</url>
-    </repository>
-  </repositories>
+    <repositories>
+        <repository>
+            <id>clojars.org</id>
+            <url>https://repo.clojars.org</url>
+        </repository>
+    </repositories>
 
-  <dependencies>
+    <dependencies>
 
-<!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-core -->
-<dependency>
-    <groupId>com.amazonaws</groupId>
-    <artifactId>aws-java-sdk-core</artifactId>
-    <version>1.12.209</version>
-</dependency>
-<!-- https://mvnrepository.com/artifact/com.amazonaws/amazon-kinesis-client -->
-<dependency>
-    <groupId>com.amazonaws</groupId>
-    <artifactId>amazon-kinesis-client</artifactId>
-    <version>1.14.8</version>
-</dependency>
-<!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-sns -->
-<dependency>
-    <groupId>com.amazonaws</groupId>
-    <artifactId>aws-java-sdk-sns</artifactId>
-    <version>1.12.209</version>
-</dependency>
-<!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
-<dependency>
-    <groupId>com.google.code.gson</groupId>
-    <artifactId>gson</artifactId>
-    <version>2.9.0</version>
-</dependency>
-<dependency>
-  <groupId>gov.nasa.earthdata</groupId>
-  <artifactId>cumulus-message-adapter</artifactId>
-  <version>1.3.9</version>
-</dependency>
-<!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-kinesis -->
-<dependency>
-    <groupId>com.amazonaws</groupId>
-    <artifactId>aws-java-sdk-kinesis</artifactId>
-    <version>1.12.209</version>
-</dependency>
-<dependency>
-    <groupId>commons-io</groupId>
-    <artifactId>commons-io</artifactId>
-    <version>2.11.0</version>
-</dependency>
-<dependency>
-    <groupId>com.amazonaws</groupId>
-    <artifactId>aws-lambda-java-core</artifactId>
-    <version>1.2.1</version>
-</dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>3.6.0</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+        <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-core -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-core</artifactId>
+            <version>1.12.565</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-kinesis-->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-kinesis</artifactId>
+            <version>1.12.565</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.amazonaws/amazon-kinesis-client -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>amazon-kinesis-client</artifactId>
+            <version>1.15.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-sns-->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-sns</artifactId>
+            <version>1.12.565</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
+        </dependency>
+        <dependency>
+            <groupId>gov.nasa.earthdata</groupId>
+            <artifactId>cumulus-message-adapter</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.11.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-lambda-java-core</artifactId>
+            <version>1.2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>3.6.0</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>org.wordinator.xml2docx.MakeDocx</mainClass>
+                                    <manifestEntries>
+                                        <Multi-Release>true</Multi-Release>
+                                    </manifestEntries>
+                                </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.7</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <formats>
+                                <format>XML</format>
+                            </formats>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>3.10.0.2594</version>
+            </plugin>
+        </plugins>
+    </build>
 </project>

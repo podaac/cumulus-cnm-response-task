@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # [Unreleased] 
 ### Added
 ### Changed
+- **PODAAC-5921**
+  - Support java 11
+  - SonarQube and Jacoco report
 ### Deprecated
 ### Removed
 ### Fixed
