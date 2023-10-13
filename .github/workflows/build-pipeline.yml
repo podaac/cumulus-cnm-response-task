@@ -24,10 +24,10 @@ jobs:
       - uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
-          java-version: '8.0.232'
+          java-version: '11.0.6'
       - uses: gradle/gradle-build-action@v1
         with:
-          gradle-version: 4.0.1
+          gradle-version: 8.0.1
       - name: Install Python 3
         uses: actions/setup-python@v2
         with:
