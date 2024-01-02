@@ -2,9 +2,19 @@
 
 ## Installation
 
-To build the Lambda code:
+To build the Lambda code, Refer to following Confluence page:
+https://wiki.jpl.nasa.gov/pages/viewpage.action?spaceKey=PD&title=SonarQube%2C+Jacoco+and+Java+17+upgrade
 
 ```shell
+* Build with sonarQube and Jacoco report
+mvn clean verify sonar:sonar \
+  -Dsonar.projectKey=cnm-response-opensource \
+  -Dsonar.projectName='cnm-response-opensource' \
+  -Dsonar.host.url=http://localhost:9000 \
+  -Dsonar.token=sqp_fc2271c4ddba6507fb38ea64d52e6912e2c6e14d
+  
+* Make sure java 11 and gradle 8.3 are adopted.
+
 mvn clean dependency:copy-dependencies
 gradle build
 ```
