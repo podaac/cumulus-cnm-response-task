@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # [Unreleased] 
 ### Added
 ### Changed
+- **PODAAC-6185**
+  - java 11 ->17
 ### Deprecated
 ### Removed
 ### Fixed
