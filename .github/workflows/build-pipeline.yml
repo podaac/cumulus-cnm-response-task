@@ -144,7 +144,7 @@ jobs:
           github.ref == 'refs/heads/master'  ||
           startsWith(github.ref, 'refs/heads/release')
         run: |
-          git config --global user.name 'podaac-cloud-IandA'
-          git config --global user.email 'podaac-cloud-IandA@jpl.nasa.gov'
+          git config --global user.name 'podaac github bot'
+          git config --global user.email 'podaac@noreply.github.com'
           git commit -m "/version ${{ env.software_version }} [skip actions]" pom.xml
           git push
