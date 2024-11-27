@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          token: ${{ secrets.GIT_PUSH_TOKEN }}
+          token: ${{ secrets.GIT_PUSH_TOKEN_VIVIANT }}
       - uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
