@@ -201,7 +201,7 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
      */
     public String buildGeneralError(JsonObject input, String cause) {
         // the minimum fields necessary to conform to the CNM schema
-        String[] schemaFields = {"version", "provider", "collection", "submissionTime", "receivedTime", "identifier"};
+        String[] schemaFields = {"version", "provider", "collection", "submissionTime", "receivedTime", "identifier", "product"};
         JsonObject failureJson = new JsonObject();
         JsonObject cnm;
         // determine if the values we need are under 'input' or
