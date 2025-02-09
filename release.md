@@ -1,3 +1,13 @@
+# [v3.0.0] - 2025-02-09
+### Added
+### Changed
+- **PODAAC-6185**
+  - java 11 ->17
+### Deprecated
+### Removed
+### Fixed
+### Security
+
 # [v2.0.3] - 2022-01-21
 ### Added
 ### Changed
