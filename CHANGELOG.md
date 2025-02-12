@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 ### Security
 
-# [3.0.0] 
+# [3.1.0] 
 ### Added
 ### Changed
 - **PODAAC-6185**
