@@ -86,17 +86,10 @@ jobs:
       - name: Install Snyk CLI
         run: npm install -g snyk
       - name: Snyk Security Scan
-        run: snyk test --debug --all-sub-projects --package-manager=gradle --file=build.gradle
+        run: snyk test --all-sub-projects --package-manager=gradle --file=build.gradle
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      - name: Snyk Security Scan
-        uses: snyk/actions/gradle-jdk17@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-          SNYK_DEBUG: true
           SNYK_TIMEOUT_SECS: 90
-        with:
-          args: --debug --log-level=trace --all-sub-projects --package-manager=gradle --file=build.gradle
       - name: Prepare Artifacts
         run: |
           artifact_file_name="${{ env.ARTIFACT_BASE_NAME }}-${{ env.software_version }}.zip"
