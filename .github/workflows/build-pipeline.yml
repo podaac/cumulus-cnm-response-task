@@ -88,8 +88,9 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           SNYK_DEBUG: true
+          SNYK_TIMEOUT_SECS: 90
         with:
-          args: test --all-sub-projects --package-manager=gradle --file=build.gradle
+          args: test --debug --log-level=trace --all-sub-projects --package-manager=gradle --file=build.gradle
       - name: Prepare Artifacts
         run: |
           artifact_file_name="${{ env.ARTIFACT_BASE_NAME }}-${{ env.software_version }}.zip"
