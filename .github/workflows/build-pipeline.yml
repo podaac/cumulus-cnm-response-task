@@ -87,6 +87,7 @@ jobs:
         uses: snyk/actions/gradle-jdk17@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          SNYK_DEBUG: true
         with:
           args: test --all-sub-projects --package-manager=gradle --file=build.gradle
       - name: Prepare Artifacts
