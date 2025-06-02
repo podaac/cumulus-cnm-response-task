@@ -83,6 +83,12 @@ jobs:
         run: |
           echo "New Version is: ${{ env.software_version }}"
           python3 builder/builder2.py -d . -a ${{env.ARTIFACT_BASE_NAME}} -v ${{ env.software_version }}
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+      - name: Snyk Security Scan
+        run: snyk test --debug --all-sub-projects --package-manager=gradle --file=build.gradle
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       - name: Snyk Security Scan
         uses: snyk/actions/gradle-jdk17@master
         env:
