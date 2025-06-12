@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # [Unreleased] 
 ### Added
 ### Changed
+- **PCESA-3208**
+  - Updated CNMResponse task to utilize producerGranuleId when generating response
 ### Deprecated
 ### Removed
 ### Fixed
