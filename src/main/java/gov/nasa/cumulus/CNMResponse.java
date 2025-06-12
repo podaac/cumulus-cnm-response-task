@@ -141,10 +141,12 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
             // Adding newly created files to product
             inputKey.get("product").getAsJsonObject().remove("files");
             inputKey.get("product").getAsJsonObject().add("files", productFiles);
-            // Adding granuleID into product object
-            String granuleId = granule.get("granuleId").getAsString();
+            // Adding producerGranuleId into product object
+            String producerGranuleId = (granule.get("producerGranuleId")!= null)
+                ? granule.get("producerGranuleId").getAsString()
+                : granule.get("granuleId").getAsString();
             inputKey.get("product").getAsJsonObject().remove("name");
-            inputKey.get("product").getAsJsonObject().addProperty("name", granuleId);
+            inputKey.get("product").getAsJsonObject().addProperty("name", producerGranuleId);
 
             // Only add CMR metadata if available
             if (granule.get("cmrConceptId") != null && granule.get("cmrLink") != null) {
