@@ -33,7 +33,13 @@ public class KinesisSender extends Sender {
             return;
         }
         PutRecordRequest putRecord = new PutRecordRequest();
-        putRecord.setStreamName(endpoint);
+
+        if (endpoint.startsWith("arn:aws:kinesis:")) {
+            putRecord.setStreamARN(endpoint);
+        } else {
+            putRecord.setStreamName(endpoint);
+        }
+
         putRecord.setPartitionKey("1");
         putRecord.setData(ByteBuffer.wrap(bytes));
         this.kinesisClient.putRecord(putRecord);
