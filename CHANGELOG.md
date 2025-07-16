@@ -8,8 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # [Unreleased] 
 ### Added
 ### Changed
+### Deprecated
+### Removed
+### Fixed
+### Security
+
+# [3.2.0] 
+### Added
+### Changed
+- PR #255: Add support for Kinesis ARNs #255
 - **PCESA-3208**
   - Updated CNMResponse task to utilize producerGranuleId when generating response
+- Added snyk integration by executing snyk tests in Github Actions.
 ### Deprecated
 ### Removed
 ### Fixed
