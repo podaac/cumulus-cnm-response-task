@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 ### Removed
 ### Fixed
+- **PODAAC-7071**
+  - Updated getCollection to address CNM 1.6.1 missing collection issue (issues/232)
 ### Security
 
 # [3.1.0] 

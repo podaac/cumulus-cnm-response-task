@@ -305,7 +305,8 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
      * by the 'buildMessageAttributesHash' method.
      * <br><br>
      * First try to use the OriginalCNM > collection field
-     * Next checks input > collection
+     * Next tries to use OriginalCNM > collection > name (cnm 1.6.1)
+     * Finally checks input > collection
      * If neither is available, then returns a generic error string
      *<br><br>
      * @param input     the raw input to PerformFunction, as JsonObject
@@ -313,13 +314,29 @@ public class CNMResponse implements ITask, IConstants, RequestHandler<String, St
      */
     public String getCollection(JsonObject input) {
         try {
-            return input.getAsJsonObject("config")
+            JsonElement collection = input.getAsJsonObject("config")
                     .getAsJsonObject("OriginalCNM")
-                    .get("collection").getAsString();
+                    .get("collection");
+
+            if (collection.isJsonPrimitive()){
+                /* For CNM <= 1.6.0
+                "collection": "COLLECTION_NAME"
+                 */
+                return collection.getAsString();
+            } else {
+                /* For CNM = 1.6.1
+                "collection": {
+                    "name": "COLLECTION_NAME",
+                    "version": "COLLECTION_VERSION"
+                }
+                */
+                return collection.getAsJsonObject().get("name").getAsString();
+            }
         } catch (Exception e) {
             if (input.getAsJsonObject("input").has("collection")) {
                 return input.getAsJsonObject("input").get("collection").getAsString();
             } else {
+                AdapterLogger.LogError(this.className + ".getCollection cannot find collection.\n" + e.getMessage());
                 return "Unknown/Missing";
             }
         }
