@@ -8,13 +8,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # [Unreleased] 
 ### Added
 ### Changed
-- **PCESA-3208**
-  - Updated CNMResponse task to utilize producerGranuleId when generating response
+### Deprecated
+### Removed
+### Fixed
+### Security
+
+# [3.3.0] 
+### Added
+### Changed
 ### Deprecated
 ### Removed
 ### Fixed
 - **PODAAC-7071**
   - Updated getCollection to address CNM 1.6.1 missing collection issue (issues/232)
+### Security
+
+# [3.2.0] 
+### Added
+### Changed
+- **PCESA-3208**
+  - Updated CNMResponse task to utilize producerGranuleId when generating response
+### Deprecated
+### Removed
+### Fixed
 ### Security
 
 # [3.1.0] 
