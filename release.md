@@ -1,3 +1,23 @@
+# [v3.3.0] - 2025-08-14
+### Added
+### Changed
+- **PODAAC-7071**
+  - Updated getCollection to address CNM 1.6.1 missing collection issue (issues/232)
+### Deprecated
+### Removed
+### Fixed
+### Security
+
+# [v3.2.0] - 2025-07-14
+### Added
+### Changed
+- **PODAAC-3208**
+  - Updated CNMResponse task to utilize producerGranuleId when generating response 
+### Deprecated
+### Removed
+### Fixed
+### Security
+
 # [v3.0.0] - 2025-02-09
 ### Added
 ### Changed
