@@ -620,4 +620,45 @@ public class AppTest
 
 		assertNull(returnValue);
 	}
+
+	public void test_getCollection_1_6_0() throws Exception{
+		CNMResponse cnmResponse = new CNMResponse();
+		String input = "{\n" +
+				"    \"config\": {\n" +
+				"        \"OriginalCNM\": {\n" +
+				"            \"version\": \"1.6.0\",\n" +
+				"            \"provider\": \"JPL\",\n" +
+				"			 \"collection\": \"JASON_CS_S6A_L2_ALT_LR_RED_OST_NTC_F08_UNVALIDATED\"\n" +
+				"        }\n" +
+				"    }\n" +
+				"}";
+
+		JsonElement jelement = new JsonParser().parse(input);
+		JsonObject inputKey = jelement.getAsJsonObject();
+		String returnValue = cnmResponse.getCollection(inputKey);
+
+		assertEquals("JASON_CS_S6A_L2_ALT_LR_RED_OST_NTC_F08_UNVALIDATED", returnValue);
+	}
+
+	public void test_getCollection_1_6_1() throws Exception{
+		CNMResponse cnmResponse = new CNMResponse();
+		String input = "{\n" +
+				"    \"config\": {\n" +
+				"        \"OriginalCNM\": {\n" +
+				"            \"version\": \"1.6.1\",\n" +
+				"            \"provider\": \"JPL\",\n" +
+				"            \"collection\": {\n" +
+				"                \"name\": \"JASON_CS_S6A_L2_ALT_LR_RED_OST_NTC_F08_UNVALIDATED\",\n" +
+				"                \"version\": \"F08\"\n" +
+				"            }\n" +
+				"        }\n" +
+				"    }\n" +
+				"}";
+
+		JsonElement jelement = new JsonParser().parse(input);
+		JsonObject inputKey = jelement.getAsJsonObject();
+		String returnValue = cnmResponse.getCollection(inputKey);
+
+		assertEquals("JASON_CS_S6A_L2_ALT_LR_RED_OST_NTC_F08_UNVALIDATED", returnValue);
+	}
 }

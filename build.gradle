@@ -1,6 +1,9 @@
 apply plugin: 'java'
-sourceCompatibility = 1.17
-targetCompatibility = 1.17
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
 
 dependencies {
     implementation fileTree(dir: 'target/dependency/', include: '*.jar')
