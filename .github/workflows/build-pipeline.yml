@@ -103,7 +103,7 @@ jobs:
             Changes in this release:
             ${{ github.event.head_commit.message }}
           draft: false
-          prerelease: ${{ ! (startsWith(github.ref, 'refs/heads/master')}}
+          prerelease: ${{ ! (startsWith(github.ref, 'refs/heads/master'))}}
           files: |
             ${{ env.ARTIFACT_FILE }}
       - name: Commit Version Bump
