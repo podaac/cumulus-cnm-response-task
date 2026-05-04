@@ -11,6 +11,7 @@ on:
 env:
   REGISTRY: ghcr.io
   ARTIFACT_BASE_NAME: cnmResponse
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   # First job name
